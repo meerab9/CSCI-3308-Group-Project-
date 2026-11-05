@@ -1,1 +1,32 @@
 <!--user can login to already created account -->
+<div class="login-page">
+    <main class="login-container">
+        <p class="login-label">login</p>
+
+        <h1>git match</h1>
+
+        {{> message}}
+
+        <form class="login-form" action="/login" method="POST">
+            <input
+                type="text"
+                name="username"
+                placeholder="username"
+                aria-label="Username"
+                autocomplete="username"
+                required
+            >
+
+            <input
+                type="password"
+                name="password"
+                placeholder="password"
+                aria-label="Password"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">login</button>
+        </form>
+    </main>
+</div>
