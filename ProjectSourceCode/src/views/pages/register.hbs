@@ -1,0 +1,162 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <!-- Progress -->
+    <ol class="stepper" aria-label="Sign up progress">
+      <li class="stepper-item active" data-step-indicator="1"><span class="stepper-dot">1</span><span class="stepper-label">Account</span></li>
+      <li class="stepper-item" data-step-indicator="2"><span class="stepper-dot">2</span><span class="stepper-label">About you</span></li>
+      <li class="stepper-item" data-step-indicator="3"><span class="stepper-dot">3</span><span class="stepper-label">Interests</span></li>
+    </ol>
+
+    {{#if message}}
+    <div class="alert alert-{{#if error}}danger{{else}}success{{/if}} py-2 small" role="alert" id="server-message">
+      {{message}}
+    </div>
+    {{/if}}
+
+    <form action="{{#if oauth}}/register/complete{{else}}/register{{/if}}" method="POST"
+          enctype="multipart/form-data" id="register-form" novalidate>
+
+      <!-- ============ Step 1: Account ============ -->
+      <section class="step" data-step="1">
+        {{#if oauth}}
+        <h1 class="auth-title">Almost there</h1>
+        <p class="auth-subtitle">You're signed in with {{oauth.providerLabel}}. Pick a username to get started.</p>
+        {{else}}
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-subtitle">Find people to study with or just hang out.</p>
+
+        <div class="d-grid gap-2">
+          {{#if googleEnabled}}
+          <a href="/auth/google" class="btn social-btn social-google"><i class="bi bi-google"></i> Continue with Google</a>
+          {{else}}
+          <button type="button" class="btn social-btn social-google" disabled title="Google sign-in isn't configured yet"><i class="bi bi-google"></i> Continue with Google</button>
+          {{/if}}
+          {{#if githubEnabled}}
+          <a href="/auth/github" class="btn social-btn social-github"><i class="bi bi-github"></i> Continue with GitHub</a>
+          {{else}}
+          <button type="button" class="btn social-btn social-github" disabled title="GitHub sign-in isn't configured yet"><i class="bi bi-github"></i> Continue with GitHub</button>
+          {{/if}}
+        </div>
+
+        <div class="divider-text"><span>or</span></div>
+        {{/if}}
+
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="username" name="username" value="{{form.username}}"
+                 required minlength="3" maxlength="50" pattern="[A-Za-z0-9_.\-]+" autocomplete="username">
+          <div class="invalid-feedback">3-50 characters: letters, numbers, _ . or -</div>
+        </div>
+        {{#unless oauth}}
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" name="password"
+                 required minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+          <div class="invalid-feedback">At least 8 characters.</div>
+        </div>
+        <div class="mb-3">
+          <label for="confirm_password" class="form-label">Confirm password</label>
+          <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                 required autocomplete="new-password">
+          <div class="invalid-feedback">Passwords must match.</div>
+        </div>
+        {{/unless}}
+
+        <button type="button" class="btn btn-brand w-100 mt-2" data-next>Continue</button>
+      </section>
+
+      <!-- ============ Step 2: About you ============ -->
+      <section class="step d-none" data-step="2">
+        <h1 class="auth-title">About you</h1>
+        <p class="auth-subtitle">Help other students recognize you. All optional.</p>
+
+        <div class="text-center mb-3">
+          <label for="profile_picture" class="avatar-picker" title="Change profile picture">
+            {{#if oauth.avatarUrl}}
+            <img id="avatar-preview" class="avatar-img" src="{{oauth.avatarUrl}}" alt="Profile picture preview" referrerpolicy="no-referrer">
+            <i id="avatar-placeholder" class="bi bi-person-circle avatar-placeholder d-none"></i>
+            {{else}}
+            <img id="avatar-preview" class="avatar-img d-none" alt="Profile picture preview">
+            <i id="avatar-placeholder" class="bi bi-person-circle avatar-placeholder"></i>
+            {{/if}}
+            <span class="avatar-edit"><i class="bi bi-camera-fill"></i></span>
+          </label>
+          <input type="file" id="profile_picture" name="profile_picture"
+                 accept="image/png,image/jpeg,image/gif,image/webp" class="d-none">
+          <div class="form-text">Add a photo (max 2 MB)</div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-sm-6">
+            <label for="github" class="form-label">GitHub</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-github"></i></span>
+              <input type="text" class="form-control" id="github" name="github" value="{{form.github}}"
+                     placeholder="username" maxlength="100">
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <label for="school" class="form-label">School</label>
+            <input type="text" class="form-control" id="school" name="school" value="{{form.school}}"
+                   placeholder="CU Boulder" maxlength="100">
+          </div>
+        </div>
+
+        <span class="form-label d-block">I'm here to...</span>
+        <div class="choice-grid mb-3" role="radiogroup" aria-label="Looking for">
+          <input type="radio" class="btn-check" name="looking_for" id="lf-study" value="study" {{#if (eq lookingFor "study")}}checked{{/if}}>
+          <label class="choice-card" for="lf-study"><i class="bi bi-book"></i><span>Study</span></label>
+          <input type="radio" class="btn-check" name="looking_for" id="lf-friends" value="friends" {{#if (eq lookingFor "friends")}}checked{{/if}}>
+          <label class="choice-card" for="lf-friends"><i class="bi bi-people"></i><span>Make friends</span></label>
+          <input type="radio" class="btn-check" name="looking_for" id="lf-both" value="both" {{#if (eq lookingFor "both")}}checked{{/if}}>
+          <label class="choice-card" for="lf-both"><i class="bi bi-stars"></i><span>Both</span></label>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light flex-grow-0" data-back><i class="bi bi-arrow-left"></i></button>
+          <button type="button" class="btn btn-brand flex-grow-1" data-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- ============ Step 3: Interests ============ -->
+      <section class="step d-none" data-step="3">
+        <h1 class="auth-title">Your interests</h1>
+        <p class="auth-subtitle">This is what people see on your profile. You can skip it for now.</p>
+
+        <div class="mb-2">
+          <label for="cs_interests" class="form-label">In computer science</label>
+          <input type="text" class="form-control" id="cs_interests" name="cs_interests" maxlength="500"
+                 value="{{form.cs_interests}}" placeholder="web dev, machine learning, systems...">
+        </div>
+        <div class="mb-3">
+          <label for="other_interests" class="form-label">Outside of computer science</label>
+          <input type="text" class="form-control" id="other_interests" name="other_interests" maxlength="500"
+                 value="{{form.other_interests}}" placeholder="climbing, music, cooking...">
+        </div>
+
+        <span class="form-label d-block">Profile prompts</span>
+        {{#each promptSlots}}
+        <div class="prompt-card{{#unless (eq index 1)}}{{#unless selected}} d-none{{/unless}}{{/unless}}" data-prompt-slot>
+          <select class="form-select form-select-sm mb-2 prompt-select" id="prompt-{{index}}" name="prompt"
+                  aria-label="Prompt {{index}}">
+            <option value="">Choose a prompt...</option>
+            {{#each options}}
+            <option value="{{this}}" {{#if (eq this ../selected)}}selected{{/if}}>{{this}}</option>
+            {{/each}}
+          </select>
+          <textarea class="form-control form-control-sm" name="prompt_answer" rows="2" maxlength="500"
+                    aria-label="Answer to prompt {{index}}" placeholder="Your answer">{{answer}}</textarea>
+        </div>
+        {{/each}}
+        <button type="button" class="btn btn-link btn-sm px-0 mb-3" id="add-prompt"><i class="bi bi-plus-circle"></i> Add another prompt</button>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light flex-grow-0" data-back><i class="bi bi-arrow-left"></i></button>
+          <button type="submit" class="btn btn-brand flex-grow-1">{{#if oauth}}Finish sign up{{else}}Create account{{/if}}</button>
+        </div>
+      </section>
+    </form>
+  </div>
+</div>
+<script src="/resources/js/register.js"></script>
