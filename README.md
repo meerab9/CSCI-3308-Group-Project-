@@ -23,13 +23,17 @@ Infrastructure & Hosting:
 Docker
 **Prerequisites to run the application - Any software that needs to be installed to run the application:** Docker
 **Instructions on how to run the application locally:**
-Git Clone to your own repository 
-Install Node.js to your computer
-Open Terminal
-Navigate to the project folder using cd
-Install the dependencies: npm install
-Start the local development server: npm start
-Open the browser and go to the local address provided.  
-**How to run the tests:** Lab 10
+Git Clone to your own repository
+Open Terminal, navigate to ProjectSourceCode with cd
+Copy the example env file: cp .env.example .env (skip if you already have a .env)
+Start it: docker compose up
+Open http://localhost:3000
+Stop it with Ctrl+C, or docker compose down from another terminal
+
+**How to run the tests:**
+Navigate to ProjectSourceCode, then:
+npm install
+npx mocha test/validation.spec.js
+No Docker needed for this one, it's a pure function test. For the full suite, including the API tests that need the test database, see ProjectSourceCode/test/README.md
 **Link to the deployed application:** Later Labs
 
