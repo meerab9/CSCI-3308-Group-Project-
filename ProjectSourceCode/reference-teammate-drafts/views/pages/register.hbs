@@ -1,0 +1,366 @@
+<!-- page where user can register / create an account -->
+<!-- rought draft we can standarize a style for all the pages later -->
+
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+
+      <div class="card shadow">
+        <div class="card-body p-4">
+
+          <h2 class="text-center mb-2">Git Match</h2>
+          <p class="text-center text-muted mb-4">
+            Create your account and tell us a little about yourself!
+          </p>
+
+          {{#if message}}
+            <div class="alert alert-danger">
+              {{message}}
+            </div>
+          {{/if}}
+
+          <form action="/register" method="POST" enctype="multipart/form-data">
+
+            <!-- ACCOUNT INFORMATION -->
+            <h5 class="mb-3">Account Information</h5>
+
+            <div class="mb-3">
+              <label for="username" class="form-label">
+                Username
+              </label>
+
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                name="username"
+                required
+              >
+            </div>
+
+
+            <div class="mb-4">
+              <label for="password" class="form-label">
+                Password
+              </label>
+
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                required
+              >
+            </div>
+
+
+            <!-- PROFILE PICTURE -->
+            <h5 class="mb-3">Profile</h5>
+
+            <div class="mb-3">
+              <label for="profile_picture" class="form-label">
+                Profile Picture
+              </label>
+
+              <input
+                type="file"
+                class="form-control"
+                id="profile_picture"
+                name="profile_picture"
+                accept="image/*"
+              >
+            </div>
+
+
+            <!-- SCHOOL -->
+            <div class="mb-4">
+              <label for="school" class="form-label">
+                Where do you go to school?
+              </label>
+
+              <input
+                type="text"
+                class="form-control"
+                id="school"
+                name="school"
+                placeholder="Example: University of Colorado Boulder"
+              >
+            </div>
+
+
+            <!-- COMPUTER SCIENCE INTERESTS -->
+            <h5 class="mb-3">Computer Science Interests</h5>
+
+            <p class="text-muted">
+              Select any areas you're interested in.
+            </p>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Web Development"
+                id="webDev"
+              >
+
+              <label class="form-check-label" for="webDev">
+                Web Development
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Cybersecurity"
+                id="cybersecurity"
+              >
+
+              <label class="form-check-label" for="cybersecurity">
+                Cybersecurity
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Artificial Intelligence"
+                id="ai"
+              >
+
+              <label class="form-check-label" for="ai">
+                Artificial Intelligence / Machine Learning
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Software Engineering"
+                id="softwareEngineering"
+              >
+
+              <label
+                class="form-check-label"
+                for="softwareEngineering"
+              >
+                Software Engineering
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Game Development"
+                id="gameDev"
+              >
+
+              <label class="form-check-label" for="gameDev">
+                Game Development
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Data Science"
+                id="dataScience"
+              >
+
+              <label class="form-check-label" for="dataScience">
+                Data Science
+              </label>
+            </div>
+
+            <div class="form-check mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="cs_interests"
+                value="Networking"
+                id="networking"
+              >
+
+              <label class="form-check-label" for="networking">
+                Networking / Infrastructure
+              </label>
+            </div>
+
+
+            <div class="mb-4">
+              <label for="other_cs_interests" class="form-label">
+                Other Computer Science Interests
+              </label>
+
+              <input
+                type="text"
+                class="form-control"
+                id="other_cs_interests"
+                name="other_cs_interests"
+                placeholder="Anything else you're interested in?"
+              >
+            </div>
+
+
+            <!-- NON-CS INTERESTS -->
+            <h5 class="mb-3">Interests Outside of Computer Science</h5>
+
+            <div class="mb-4">
+              <label for="personal_interests" class="form-label">
+                What do you enjoy outside of coding?
+              </label>
+
+              <textarea
+                class="form-control"
+                id="personal_interests"
+                name="personal_interests"
+                rows="3"
+                placeholder="Example: hiking, gaming, music, reading, cooking..."
+              ></textarea>
+            </div>
+
+
+            <!-- WHAT ARE YOU LOOKING FOR -->
+            <h5 class="mb-3">What are you looking for?</h5>
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="looking_for"
+                id="studyBuddy"
+                value="Study Buddy"
+                required
+              >
+
+              <label class="form-check-label" for="studyBuddy">
+                Study buddies
+              </label>
+            </div>
+
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="looking_for"
+                id="friends"
+                value="Friends"
+              >
+
+              <label class="form-check-label" for="friends">
+                Friends
+              </label>
+            </div>
+
+
+            <div class="form-check mb-4">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="looking_for"
+                id="both"
+                value="Both"
+              >
+
+              <label class="form-check-label" for="both">
+                Both
+              </label>
+            </div>
+
+
+            <!-- PROFILE PROMPT -->
+            <h5 class="mb-3">Profile Prompt</h5>
+
+            <div class="mb-3">
+              <label for="prompt" class="form-label">
+                Choose a prompt
+              </label>
+
+              <select
+                class="form-select"
+                id="prompt"
+                name="prompt"
+                required
+              >
+
+                <option value="" selected disabled>
+                  Choose a question...
+                </option>
+
+                <option value="favorite_language">
+                  What is your favorite programming language and why?
+                </option>
+
+                <option value="dream_project">
+                  What is your dream coding project?
+                </option>
+
+                <option value="debugging">
+                  What do you do when your code refuses to work?
+                </option>
+
+                <option value="first_program">
+                  What was the first program you ever wrote?
+                </option>
+
+                <option value="tech_interest">
+                  What technology are you currently excited to learn?
+                </option>
+
+                <option value="coding_partner">
+                  What makes someone a great coding partner?
+                </option>
+
+                <option value="tabs_spaces">
+                  Tabs or spaces?
+                </option>
+
+              </select>
+            </div>
+
+
+            <div class="mb-4">
+              <label for="prompt_answer" class="form-label">
+                Your Answer
+              </label>
+
+              <textarea
+                class="form-control"
+                id="prompt_answer"
+                name="prompt_answer"
+                rows="3"
+                placeholder="Tell other Git Match users a little about yourself..."
+                required
+              ></textarea>
+            </div>
+
+
+            <!-- SUBMIT -->
+            <div class="d-grid">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+              >
+                Create My Git Match Profile
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
