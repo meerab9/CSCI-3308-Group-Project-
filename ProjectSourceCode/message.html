@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chats</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #d1d7db;
+      color: #111b21;
+    }
+
+    .app {
+      display: flex;
+      height: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #fff;
+    }
+    @media (min-width: 1100px) {
+      body { padding: 20px 0; }
+      .app { height: calc(100% - 0px); box-shadow: 0 6px 18px rgba(11, 20, 26, .2); }
+    }
+
+    /* ---------- Friends pane ---------- */
+    .friends {
+      flex: 0 0 100%;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e9edef;
+      background: #fff;
+    }
+    @media (min-width: 768px) {
+      .friends { flex-basis: 380px; max-width: 380px; }
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 59px;
+      padding: 10px 16px;
+      background: #f0f2f5;
+    }
+    .bar h1 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+
+    .search { padding: 8px 12px; border-bottom: 1px solid #e9edef; }
+    .search input {
+      width: 100%;
+      padding: 9px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #f0f2f5;
+      font: inherit;
+      font-size: .9rem;
+    }
+    .search input:focus { outline: 2px solid #00a884; background: #fff; }
+
+    .friend-list { flex: 1; overflow-y: auto; }
+    .friend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 16px;
+      border: 0;
+      border-bottom: 1px solid #f0f2f5;
+      background: #fff;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .friend:hover { background: #f5f6f6; }
+    .friend.active { background: #f0f2f5; }
+    .friend:focus-visible { outline: 2px solid #00a884; outline-offset: -2px; }
+
+    .avatar {
+      flex: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #dfe5e7;
+      color: #54656f;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .avatar.sm { width: 40px; height: 40px; font-size: 1rem; }
+
+    .friend-main { flex: 1; min-width: 0; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .name { font-weight: 500; }
+    .time { font-size: .75rem; color: #667781; }
+    .time.unread { color: #00a884; }
+    .last {
+      font-size: .85rem;
+      color: #667781;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .badge {
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 10px;
+      background: #00a884;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ---------- Chat pane ---------- */
+    .chat {
+      display: none;
+      flex: 1;
+      min-width: 0;
+      flex-direction: column;
+      background: #efeae2;
+    }
+    @media (min-width: 768px) { .chat { display: flex; } }
+
+    .chat-head .who { line-height: 1.2; }
+    .chat-head .status { font-size: .78rem; color: #667781; }
+    .back {
+      border: 0;
+      background: none;
+      font-size: 1.4rem;
+      line-height: 1;
+      color: #54656f;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    @media (min-width: 768px) { .back { display: none; } }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 16px 6%;
+    }
+    .bubble {
+      max-width: 70%;
+      padding: 6px 9px 4px;
+      border-radius: 8px;
+      font-size: .92rem;
+      box-shadow: 0 1px .5px rgba(11, 20, 26, .13);
+      overflow-wrap: anywhere;
+    }
+    .bubble.received { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
+    .bubble.sent { align-self: flex-end; background: #d9fdd3; border-top-right-radius: 0; }
+    .bubble .stamp { display: block; margin-top: 2px; text-align: right; font-size: .68rem; color: #667781; }
+
+    .composer {
+      display: flex;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f0f2f5;
+    }
+    .composer input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-size: .95rem;
+    }
+    .composer input:focus { outline: 2px solid #00a884; }
+    .composer button {
+      padding: 9px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #00a884;
+      color: #fff;
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .composer button:hover { background: #008f6f; }
+    .composer button:focus-visible { outline: 2px solid #111b21; outline-offset: 2px; }
+
+    .empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      background: #f0f2f5;
+      color: #667781;
+    }
+    .empty h2 { margin: 0 0 6px; font-size: 1.4rem; font-weight: 300; color: #41525d; }
+
+    /* Mobile: show either the list or the chat */
+    @media (max-width: 767px) {
+      .app.chat-open .friends { display: none; }
+      .app.chat-open .chat { display: flex; }
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- Friends list -->
+    <aside class="friends" aria-label="Friends">
+      <div class="bar"><h1>Chats</h1></div>
+      <div class="search">
+        <input type="search" id="search" placeholder="Search friends" aria-label="Search friends">
+      </div>
+      <div class="friend-list" id="friendList"></div>
+    </aside>
+
+    <!-- Chat -->
+    <main class="chat" id="chat">
+      <div class="empty" id="empty">
+        <h2>Pick a friend to start chatting</h2>
+        <p>Select a conversation from the list.</p>
+      </div>
+
+      <div class="bar chat-head hidden" id="chatHead">
+        <button class="back" id="back" aria-label="Back to chats">&larr;</button>
+        <div class="avatar sm" id="headAvatar"></div>
+        <div class="who">
+          <div class="name" id="headName"></div>
+          <div class="status" id="headStatus"></div>
+        </div>
+      </div>
+
+      <div class="messages hidden" id="messages"></div>
+
+      <form class="composer hidden" id="composer">
+        <input type="text" id="input" placeholder="Type a message" autocomplete="off" aria-label="Message">
+        <button type="submit">Send</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    // Sample data. Replace with your own data or API calls.
+    var friends = [
+      { id: 1, name: "Maya Chen", status: "online", time: "10:42", unread: 2,
+        messages: [
+          { text: "Are we still on for lunch?", sent: false, time: "10:40" },
+          { text: "Yes! 12:30 at the usual place?", sent: true, time: "10:41" },
+          { text: "Perfect, see you there", sent: false, time: "10:42" }
+        ] },
+      { id: 2, name: "Jordan Ellis", status: "last seen today at 9:15", time: "9:15", unread: 0,
+        messages: [
+          { text: "Did you finish the report?", sent: true, time: "9:10" },
+          { text: "Almost, sending it within the hour.", sent: false, time: "9:15" }
+        ] },
+      { id: 3, name: "Sam Okafor", status: "online", time: "Yesterday", unread: 0,
+        messages: [
+          { text: "Thanks for the help earlier!", sent: false, time: "18:02" }
+        ] },
+      { id: 4, name: "Priya Nair", status: "last seen yesterday", time: "Tuesday", unread: 5,
+        messages: [
+          { text: "Check out this link", sent: false, time: "14:20" },
+          { text: "Looks great", sent: true, time: "14:25" }
+        ] }
+    ];
+
+    var app = document.getElementById("app");
+    var list = document.getElementById("friendList");
+    var activeId = null;
+
+    function initial(name) { return name.charAt(0).toUpperCase(); }
+    function lastMessage(f) {
+      var m = f.messages[f.messages.length - 1];
+      return m ? (m.sent ? "You: " : "") + m.text : "";
+    }
+
+    function renderList(filter) {
+      filter = (filter || "").toLowerCase();
+      list.innerHTML = "";
+      friends.forEach(function (f) {
+        if (f.name.toLowerCase().indexOf(filter) === -1) return;
+
+        var btn = document.createElement("button");
+        btn.className = "friend" + (f.id === activeId ? " active" : "");
+        btn.innerHTML =
+          '<div class="avatar">' + initial(f.name) + '</div>' +
+          '<div class="friend-main">' +
+            '<div class="row"><span class="name"></span><span class="time' + (f.unread ? " unread" : "") + '">' + f.time + '</span></div>' +
+            '<div class="row"><span class="last"></span>' + (f.unread ? '<span class="badge">' + f.unread + '</span>' : "") + '</div>' +
+          '</div>';
+        // textContent keeps user-provided text from being treated as HTML
+        btn.querySelector(".name").textContent = f.name;
+        btn.querySelector(".last").textContent = lastMessage(f);
+        btn.addEventListener("click", function () { openChat(f.id); });
+        list.appendChild(btn);
+      });
+    }
+
+    function renderMessages(f) {
+      var box = document.getElementById("messages");
+      box.innerHTML = "";
+      f.messages.forEach(function (m) {
+        var b = document.createElement("div");
+        b.className = "bubble " + (m.sent ? "sent" : "received");
+        b.appendChild(document.createTextNode(m.text));
+        var s = document.createElement("span");
+        s.className = "stamp";
+        s.textContent = m.time;
+        b.appendChild(s);
+        box.appendChild(b);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function openChat(id) {
+      var f = friends.filter(function (x) { return x.id === id; })[0];
+      activeId = id;
+      f.unread = 0;
+
+      document.getElementById("headAvatar").textContent = initial(f.name);
+      document.getElementById("headName").textContent = f.name;
+      document.getElementById("headStatus").textContent = f.status;
+
+      ["chatHead", "messages", "composer"].forEach(function (k) {
+        document.getElementById(k).classList.remove("hidden");
+      });
+      document.getElementById("empty").classList.add("hidden");
+      app.classList.add("chat-open");
+
+      renderMessages(f);
+      renderList(document.getElementById("search").value);
+      document.getElementById("input").focus();
+    }
+
+    document.getElementById("back").addEventListener("click", function () {
+      app.classList.remove("chat-open");
+    });
+
+    document.getElementById("search").addEventListener("input", function (e) {
+      renderList(e.target.value);
+    });
+
+    document.getElementById("composer").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = document.getElementById("input");
+      var text = input.value.trim();
+      if (!text || activeId === null) return;
+
+      var f = friends.filter(function (x) { return x.id === activeId; })[0];
+      var now = new Date();
+      var stamp = now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
+      f.messages.push({ text: text, sent: true, time: stamp });
+      f.time = stamp;
+      input.value = "";
+
+      renderMessages(f);
+      renderList(document.getElementById("search").value);
+    });
+
+    renderList();
+  </script>
+</body>
+</html>
