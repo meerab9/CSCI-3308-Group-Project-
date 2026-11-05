@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Git Match · Messages</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --gm-bg: #0d1117;
+      --gm-panel: #161b22;
+      --gm-border: #30363d;
+      --gm-text: #e6edf3;
+      --gm-muted: #8b949e;
+      --gm-accent: #2ea043;
+      --gm-accent-hover: #3fb950;
+      --gm-bubble-me: #238636;
+      --gm-bubble-them: #21262d;
+      --gm-danger: #f85149;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: var(--gm-bg);
+      color: var(--gm-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* ---------- Top nav ---------- */
+    .gm-nav {
+      background: var(--gm-panel);
+      border-bottom: 1px solid var(--gm-border);
+      height: 60px;
+    }
+    .gm-logo { font-weight: 700; font-size: 1.25rem; color: var(--gm-text); text-decoration: none; }
+    .gm-logo span { color: var(--gm-accent-hover); }
+    .gm-nav a.nav-link { color: var(--gm-muted); }
+    .gm-nav a.nav-link.active, .gm-nav a.nav-link:hover { color: var(--gm-text); }
+
+    /* ---------- Layout ---------- */
+    .gm-shell { height: calc(100vh - 60px); display: flex; }
+    .gm-sidebar {
+      width: 340px; min-width: 280px;
+      background: var(--gm-panel);
+      border-right: 1px solid var(--gm-border);
+      display: flex; flex-direction: column;
+    }
+    .gm-chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+    /* ---------- Sidebar ---------- */
+    .gm-sidebar-header { padding: 16px; border-bottom: 1px solid var(--gm-border); }
+    .gm-search {
+      background: var(--gm-bg); border: 1px solid var(--gm-border); color: var(--gm-text);
+    }
+    .gm-search:focus { background: var(--gm-bg); color: var(--gm-text); border-color: var(--gm-accent); box-shadow: none; }
+    .gm-search::placeholder { color: var(--gm-muted); }
+    .btn-gm {
+      background: var(--gm-accent); color: #fff; border: none; font-weight: 600;
+    }
+    .btn-gm:hover, .btn-gm:focus { background: var(--gm-accent-hover); color: #fff; }
+
+    .gm-convo-list { overflow-y: auto; flex: 1; }
+    .gm-convo {
+      display: flex; gap: 12px; padding: 14px 16px; cursor: pointer;
+      border-bottom: 1px solid var(--gm-border); transition: background .15s;
+    }
+    .gm-convo:hover { background: #1c2128; }
+    .gm-convo.active { background: #1f2a1f; border-left: 3px solid var(--gm-accent); padding-left: 13px; }
+    .gm-convo-name { font-weight: 600; }
+    .gm-convo-preview { color: var(--gm-muted); font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gm-convo-time { color: var(--gm-muted); font-size: .75rem; }
+    .gm-empty-list { color: var(--gm-muted); text-align: center; padding: 32px 16px; }
+
+    .gm-avatar {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff;
+    }
+
+    /* ---------- Chat pane ---------- */
+    .gm-chat-header {
+      padding: 12px 20px; border-bottom: 1px solid var(--gm-border);
+      background: var(--gm-panel); display: flex; align-items: center; gap: 12px;
+    }
+    .gm-tag {
+      font-size: .7rem; padding: 2px 8px; border-radius: 999px;
+      background: #1f6feb33; color: #58a6ff; border: 1px solid #1f6feb66;
+    }
+    .gm-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .gm-msg { max-width: 65%; padding: 10px 14px; border-radius: 14px; line-height: 1.4; word-wrap: break-word; }
+    .gm-msg.me { align-self: flex-end; background: var(--gm-bubble-me); border-bottom-right-radius: 4px; }
+    .gm-msg.them { align-self: flex-start; background: var(--gm-bubble-them); border: 1px solid var(--gm-border); border-bottom-left-radius: 4px; }
+    .gm-msg-time { font-size: .7rem; color: #ffffff99; margin-top: 4px; text-align: right; }
+    .gm-msg.them .gm-msg-time { color: var(--gm-muted); text-align: left; }
+
+    .gm-placeholder {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--gm-muted); text-align: center; padding: 20px;
+    }
+    .gm-placeholder i { font-size: 3rem; color: var(--gm-accent); }
+
+    .gm-composer { border-top: 1px solid var(--gm-border); background: var(--gm-panel); padding: 14px 20px; }
+    .gm-input {
+      background: var(--gm-bg); border: 1px solid var(--gm-border); color: var(--gm-text); resize: none;
+    }
+    .gm-input:focus { background: var(--gm-bg); color: var(--gm-text); border-color: var(--gm-accent); box-shadow: none; }
+    .gm-input.is-invalid { border-color: var(--gm-danger); }
+    .gm-input::placeholder { color: var(--gm-muted); }
+    .gm-error { color: var(--gm-danger); font-size: .85rem; margin-top: 6px; display: none; }
+    .gm-error.show { display: block; }
+
+    /* ---------- Modal ---------- */
+    .modal-content { background: var(--gm-panel); color: var(--gm-text); border: 1px solid var(--gm-border); }
+    .modal-header, .modal-footer { border-color: var(--gm-border); }
+    .btn-close { filter: invert(1); }
+    .gm-friend-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; margin: 3px;
+      border: 1px solid var(--gm-border); border-radius: 999px; cursor: pointer; font-size: .85rem;
+    }
+    .gm-friend-pill:hover { border-color: var(--gm-accent); }
+    .form-label { color: var(--gm-muted); font-size: .85rem; }
+
+    /* ---------- Toast ---------- */
+    .toast { background: var(--gm-panel); color: var(--gm-text); border: 1px solid var(--gm-accent); }
+
+    /* ---------- Mobile ---------- */
+    @media (max-width: 768px) {
+      .gm-sidebar { width: 100%; }
+      .gm-shell.chat-open .gm-sidebar { display: none; }
+      .gm-shell:not(.chat-open) .gm-chat { display: none; }
+      .gm-msg { max-width: 85%; }
+    }
+    .gm-back { display: none; }
+    @media (max-width: 768px) { .gm-back { display: inline-block; } }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="gm-nav d-flex align-items-center px-4">
+    <a href="#" class="gm-logo"><i class="bi bi-git"></i> Git<span>Match</span></a>
+    <ul class="nav ms-auto">
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-compass"></i> Discover</a></li>
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-folder2-open"></i> Projects</a></li>
+      <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-chat-dots"></i> Messages</a></li>
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-person-circle"></i> Profile</a></li>
+    </ul>
+  </nav>
+
+  <div class="gm-shell" id="shell">
+    <!-- ===== Sidebar: conversation list ===== -->
+    <aside class="gm-sidebar">
+      <div class="gm-sidebar-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0">Messages</h5>
+          <button class="btn btn-gm btn-sm" data-bs-toggle="modal" data-bs-target="#newChatModal">
+            <i class="bi bi-plus-lg"></i> New Chat
+          </button>
+        </div>
+        <input type="text" class="form-control form-control-sm gm-search" id="searchInput" placeholder="Search conversations..." />
+      </div>
+      <div class="gm-convo-list" id="convoList"></div>
+    </aside>
+
+    <!-- ===== Chat pane ===== -->
+    <main class="gm-chat" id="chatPane">
+      <div class="gm-placeholder" id="chatPlaceholder">
+        <i class="bi bi-chat-square-text mb-3"></i>
+        <h5 class="text-light">No conversation selected</h5>
+        <p>Pick a chat on the left, or start a new one with a friend.</p>
+      </div>
+
+      <div id="chatActive" class="d-none d-flex flex-column h-100">
+        <div class="gm-chat-header">
+          <button class="btn btn-sm btn-outline-secondary gm-back" id="backBtn"><i class="bi bi-arrow-left"></i></button>
+          <div class="gm-avatar" id="chatAvatar"></div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold" id="chatName"></div>
+            <div class="small text-secondary" id="chatHandle"></div>
+          </div>
+          <span class="gm-tag" id="chatProject"></span>
+        </div>
+
+        <div class="gm-messages" id="messages"></div>
+
+        <form class="gm-composer" id="messageForm" novalidate>
+          <div class="d-flex gap-2 align-items-end">
+            <textarea class="form-control gm-input" id="messageInput" rows="1" placeholder="Write a message..." aria-label="Message"></textarea>
+            <button type="submit" class="btn btn-gm px-3"><i class="bi bi-send-fill"></i></button>
+          </div>
+          <div class="gm-error" id="messageError"><i class="bi bi-exclamation-circle"></i> Fill all required fields</div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== New Chat Modal ===== -->
+  <div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content" id="newChatForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="newChatLabel"><i class="bi bi-person-plus"></i> Start a New Chat</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label" for="recipientInput">To (username) *</label>
+          <input type="text" class="form-control gm-input mb-1" id="recipientInput" placeholder="@username" autocomplete="off" />
+          <div class="gm-error" id="recipientError"></div>
+
+          <label class="form-label mt-3" for="firstMessageInput">Message *</label>
+          <textarea class="form-control gm-input" id="firstMessageInput" rows="3" placeholder="Hey! Saw your project and wanted to collab..."></textarea>
+          <div class="gm-error" id="firstMessageError"><i class="bi bi-exclamation-circle"></i> Fill all required fields</div>
+
+          <div class="mt-3">
+            <div class="form-label mb-1">Your friends</div>
+            <div id="friendPills"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-gm">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Toast (message sent confirmation) ===== -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="sentToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body"><i class="bi bi-check-circle-fill text-success"></i> Message sent!</div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    /* =========================================================
+       MOCK DATA — replace with your backend/API calls later
+       ========================================================= */
+    const currentUser = "wayne";
+
+    // Users the current user is friends with
+    const friends = [
+      { username: "ava_codes",   name: "Ava Chen",      project: "React Native Budget App", color: "#8957e5" },
+      { username: "devmarcus",   name: "Marcus Lee",    project: "Rust CLI Tool",           color: "#1f6feb" },
+      { username: "priya.ml",    name: "Priya Patel",   project: "ML Course Recommender",   color: "#db6d28" },
+      { username: "jordan_dev",  name: "Jordan Kim",    project: "Discord Study Bot",       color: "#bf3989" },
+      { username: "samtheswe",   name: "Sam Ortiz",     project: "Campus Map API",          color: "#0e8a7e" }
+    ];
+
+    // Existing conversations
+    let conversations = [
+      {
+        username: "ava_codes",
+        messages: [
+          { from: "ava_codes", text: "Hey! Saw you know Python, want to help with the backend for my budget app?", time: "10:12 AM" },
+          { from: "wayne",     text: "Yeah that sounds sick. What stack are you using?", time: "10:15 AM" },
+          { from: "ava_codes", text: "Express + Postgres right now. Open to changing it though", time: "10:16 AM" }
+        ]
+      },
+      {
+        username: "devmarcus",
+        messages: [
+          { from: "devmarcus", text: "Did you push the fix for the arg parser?", time: "Yesterday" },
+          { from: "wayne",     text: "Just pushed it, check the dev branch", time: "Yesterday" }
+        ]
+      },
+      {
+        username: "priya.ml",
+        messages: [
+          { from: "priya.ml", text: "Thanks for matching! Down to pair program this weekend?", time: "Mon" }
+        ]
+      }
+    ];
+
+    let activeUsername = null;
+
+    /* =========================================================
+       HELPERS
+       ========================================================= */
+    const $ = (id) => document.getElementById(id);
+    const getFriend = (username) =>
+      friends.find(f => f.username.toLowerCase() === username.toLowerCase());
+    const initials = (name) => name.split(" ").map(n => n[0]).join("").toUpperCase();
+    const nowTime = () => new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const escapeHTML = (str) => str.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+    function showError(el, msg) {
+      if (msg) el.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${msg}`;
+      el.classList.add("show");
+    }
+    function hideError(el) { el.classList.remove("show"); }
+
+    const sentToast = new bootstrap.Toast($("sentToast"), { delay: 2500 });
+    const newChatModal = new bootstrap.Modal($("newChatModal"));
+
+    /* =========================================================
+       RENDER: conversation list
+       ========================================================= */
+    function renderConvoList(filter = "") {
+      const list = $("convoList");
+      const f = filter.trim().toLowerCase();
+      const visible = conversations.filter(c => {
+        const friend = getFriend(c.username);
+        return !f || c.username.toLowerCase().includes(f) || friend.name.toLowerCase().includes(f);
+      });
+
+      if (visible.length === 0) {
+        list.innerHTML = `<div class="gm-empty-list"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No conversations yet.<br>Hit <b>New Chat</b> to start one!</div>`;
+        return;
+      }
+
+      list.innerHTML = visible.map(c => {
+        const friend = getFriend(c.username);
+        const last = c.messages[c.messages.length - 1];
+        const prefix = last.from === currentUser ? "You: " : "";
+        return `
+          <div class="gm-convo ${c.username === activeUsername ? "active" : ""}" data-username="${c.username}">
+            <div class="gm-avatar" style="background:${friend.color}">${initials(friend.name)}</div>
+            <div class="flex-grow-1 overflow-hidden">
+              <div class="d-flex justify-content-between">
+                <span class="gm-convo-name">${friend.name}</span>
+                <span class="gm-convo-time">${last.time}</span>
+              </div>
+              <div class="gm-convo-preview">${prefix}${escapeHTML(last.text)}</div>
+            </div>
+          </div>`;
+      }).join("");
+
+      list.querySelectorAll(".gm-convo").forEach(el =>
+        el.addEventListener("click", () => openConversation(el.dataset.username))
+      );
+    }
+
+    /* =========================================================
+       RENDER: open chat
+       ========================================================= */
+    function openConversation(username) {
+      activeUsername = username;
+      const friend = getFriend(username);
+      const convo = conversations.find(c => c.username === username);
+
+      $("chatPlaceholder").classList.add("d-none");
+      $("chatActive").classList.remove("d-none");
+      $("shell").classList.add("chat-open");
+
+      $("chatAvatar").textContent = initials(friend.name);
+      $("chatAvatar").style.background = friend.color;
+      $("chatName").textContent = friend.name;
+      $("chatHandle").textContent = "@" + friend.username;
+      $("chatProject").innerHTML = `<i class="bi bi-folder2"></i> ${friend.project}`;
+
+      renderMessages(convo);
+      renderConvoList($("searchInput").value);
+      hideError($("messageError"));
+      $("messageInput").classList.remove("is-invalid");
+      $("messageInput").focus();
+    }
+
+    function renderMessages(convo) {
+      const box = $("messages");
+      box.innerHTML = convo.messages.map(m => `
+        <div class="gm-msg ${m.from === currentUser ? "me" : "them"}">
+          ${escapeHTML(m.text)}
+          <div class="gm-msg-time">${m.time}</div>
+        </div>`).join("");
+      box.scrollTop = box.scrollHeight;
+    }
+
+    /* =========================================================
+       SEND MESSAGE in an open chat
+       ========================================================= */
+    $("messageForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = $("messageInput");
+      const text = input.value.trim();
+
+      if (!text) {
+        input.classList.add("is-invalid");
+        showError($("messageError"), "Fill all required fields");
+        return;
+      }
+
+      // Safety check: should never happen from UI, but guards future API data
+      if (!getFriend(activeUsername)) {
+        showError($("messageError"), "You can only message people you're friends with.");
+        return;
+      }
+
+      const convo = conversations.find(c => c.username === activeUsername);
+      convo.messages.push({ from: currentUser, text, time: nowTime() });
+
+      // Move this convo to the top of the list
+      conversations = [convo, ...conversations.filter(c => c !== convo)];
+
+      input.value = "";
+      input.classList.remove("is-invalid");
+      hideError($("messageError"));
+      renderMessages(convo);
+      renderConvoList($("searchInput").value);
+      sentToast.show();
+    });
+
+    // Enter sends, Shift+Enter makes a new line
+    $("messageInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        $("messageForm").requestSubmit();
+      }
+    });
+    $("messageInput").addEventListener("input", () => {
+      if ($("messageInput").value.trim()) {
+        $("messageInput").classList.remove("is-invalid");
+        hideError($("messageError"));
+      }
+    });
+
+    /* =========================================================
+       NEW CHAT modal
+       ========================================================= */
+    function renderFriendPills() {
+      $("friendPills").innerHTML = friends.map(f => `
+        <span class="gm-friend-pill" data-username="${f.username}">
+          <span class="gm-avatar" style="width:20px;height:20px;font-size:.6rem;background:${f.color}">${initials(f.name)}</span>
+          @${f.username}
+        </span>`).join("");
+      $("friendPills").querySelectorAll(".gm-friend-pill").forEach(p =>
+        p.addEventListener("click", () => {
+          $("recipientInput").value = p.dataset.username;
+          $("recipientInput").classList.remove("is-invalid");
+          hideError($("recipientError"));
+          $("firstMessageInput").focus();
+        })
+      );
+    }
+
+    $("newChatForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const recipientEl = $("recipientInput");
+      const messageEl = $("firstMessageInput");
+      const recipient = recipientEl.value.trim().replace(/^@/, "");
+      const text = messageEl.value.trim();
+
+      let valid = true;
+      [recipientEl, messageEl].forEach(el => el.classList.remove("is-invalid"));
+      hideError($("recipientError"));
+      hideError($("firstMessageError"));
+
+      // 1. Empty fields
+      if (!recipient) {
+        recipientEl.classList.add("is-invalid");
+        showError($("recipientError"), "Fill all required fields");
+        valid = false;
+      }
+      if (!text) {
+        messageEl.classList.add("is-invalid");
+        showError($("firstMessageError"), "Fill all required fields");
+        valid = false;
+      }
+      if (!valid) return;
+
+      // 2. Not friends
+      const friend = getFriend(recipient);
+      if (!friend) {
+        recipientEl.classList.add("is-invalid");
+        showError($("recipientError"), `You are not friends with @${escapeHTML(recipient)}. Match with them first to start a chat.`);
+        return;
+      }
+
+      // 3. Add to existing convo or create a new one
+      let convo = conversations.find(c => c.username === friend.username);
+      if (!convo) {
+        convo = { username: friend.username, messages: [] };
+      }
+      convo.messages.push({ from: currentUser, text, time: nowTime() });
+      conversations = [convo, ...conversations.filter(c => c !== convo)];
+
+      $("newChatForm").reset();
+      newChatModal.hide();
+      openConversation(friend.username);
+      sentToast.show();
+    });
+
+    // Clear modal errors when it closes
+    $("newChatModal").addEventListener("hidden.bs.modal", () => {
+      $("newChatForm").reset();
+      ["recipientInput", "firstMessageInput"].forEach(id => $(id).classList.remove("is-invalid"));
+      hideError($("recipientError"));
+      hideError($("firstMessageError"));
+    });
+
+    /* =========================================================
+       Misc
+       ========================================================= */
+    $("searchInput").addEventListener("input", (e) => renderConvoList(e.target.value));
+    $("backBtn").addEventListener("click", () => {
+      $("shell").classList.remove("chat-open");
+      activeUsername = null;
+      renderConvoList($("searchInput").value);
+    });
+
+    renderConvoList();
+    renderFriendPills();
+  </script>
+</body>
+</html>
