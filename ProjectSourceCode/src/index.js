@@ -7,15 +7,16 @@ const app = express();
 const handlebars = require('express-handlebars');
 const path = require('path');
 const fs = require('fs');
-const pgp = require('pg-promise')();
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const crypto = require('crypto');
+const db = require('./db');
+const { isValidUsername, isValidPassword, normalizeGithub, trimOrNull } = require('./lib/validators');
 
 // *****************************************************
-// <!-- Section 2 : Connect to DB -->
+// <!-- Section 2 : View Engine -->
 // *****************************************************
 
 const hbs = handlebars.create({
@@ -26,25 +27,6 @@ const hbs = handlebars.create({
     eq: (a, b) => a === b,
   },
 });
-
-const dbConfig = {
-  host: process.env.POSTGRES_HOST || 'db',
-  port: 5432,
-  database: process.env.POSTGRES_DB,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-};
-
-const db = pgp(dbConfig);
-
-db.connect()
-  .then(obj => {
-    console.log('Database connection successful');
-    obj.done();
-  })
-  .catch(error => {
-    console.log('ERROR:', error.message || error);
-  });
 
 // *****************************************************
 // <!-- Section 3 : App Settings -->
@@ -114,8 +96,11 @@ const MAX_PROMPTS = 3;
 const LOOKING_FOR_OPTIONS = ['study', 'friends', 'both'];
 
 // *****************************************************
-// <!-- Section 4 : API Routes -->
+// <!-- Section 4 : Routes -->
 // *****************************************************
+
+// JSON API (auth + profile reads) — see routes/api.js.
+app.use('/api', require('./routes/api'));
 
 app.get('/', (req, res) => {
   res.render('pages/home');
@@ -128,7 +113,7 @@ app.get('/register', (req, res) => {
 app.post('/register', withUpload, async (req, res) => {
   const form = req.body;
   const password = form.password || '';
-  if (password.length < 8) {
+  if (!isValidPassword(password)) {
     return failRegister(req, res, 'Password must be at least 8 characters.');
   }
   if (password !== form.confirm_password) {
@@ -322,7 +307,7 @@ async function createUser(req, res, { passwordHash = null, identity = null, fall
   const github = normalizeGithub(form.github);
   const lookingFor = LOOKING_FOR_OPTIONS.includes(form.looking_for) ? form.looking_for : 'both';
 
-  if (!/^[A-Za-z0-9_.-]{3,50}$/.test(username)) {
+  if (!isValidUsername(username)) {
     return failRegister(req, res, 'Username must be 3-50 characters: letters, numbers, _ . or -');
   }
   if (github === null) {
@@ -406,20 +391,6 @@ function registerViewData(form = {}, message, pending) {
     googleEnabled: isConfigured(OAUTH_PROVIDERS.google),
     githubEnabled: isConfigured(OAUTH_PROVIDERS.github),
   };
-}
-
-function trimOrNull(value) {
-  const v = (value || '').trim();
-  return v ? v : null;
-}
-
-// Accepts "octocat", "@octocat", or "https://github.com/octocat".
-// Returns '' when blank, null when invalid, otherwise the bare username.
-function normalizeGithub(value) {
-  let v = (value || '').trim();
-  if (!v) return '';
-  v = v.replace(/^https?:\/\/(www\.)?github\.com\//i, '').replace(/^@/, '').replace(/\/+$/, '');
-  return /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(v) ? v : null;
 }
 
 // *****************************************************
