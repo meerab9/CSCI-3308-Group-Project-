@@ -1,0 +1,27 @@
+services:
+  db-test:
+    image: postgres:14 # matches the dev docker-compose.yaml's Postgres major version
+    env_file: .env.test
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - gitmatch-test-db:/var/lib/postgresql/data
+      - ./src/init_data:/docker-entrypoint-initdb.d:ro
+  tests:
+    image: node:22.19.0-bookworm
+    working_dir: /repository
+    env_file: .env.test
+    depends_on:
+      db-test:
+        condition: service_healthy
+    volumes:
+      - ./:/repository
+      - gitmatch-test-node-modules:/repository/node_modules
+    command: ['npm', 'test']
+volumes:
+  gitmatch-test-db:
+  gitmatch-test-node-modules:
