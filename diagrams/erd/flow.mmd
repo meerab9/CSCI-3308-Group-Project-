@@ -1,0 +1,31 @@
+flowchart TD
+    A["GET /"] --> B{"Signing up or in?"}
+
+    B -->|"Sign up, email"| C["GET /register"]
+    C --> E["POST /register"]
+    E --> F{"username / password /\ngithub valid?"}
+    F -->|"no"| C
+    F -->|"yes"| G[("INSERT users\n+ user_prompts")]
+    G --> H["Render home - account created"]
+
+    B -->|"Sign up or in, Google/GitHub"| D["GET /auth/:provider"]
+    D --> I["Provider consent screen"]
+    I --> J["GET /auth/:provider/callback"]
+    J --> K{"provider_id already\nin user_identities?"}
+    K -->|"yes, returning user"| S["session.user = username"]
+    K -->|"no, new user"| O["Stash profile in\nsession.pendingOAuth"]
+    O --> P["GET /register/complete"]
+    P --> Q["POST /register/complete"]
+    Q --> R[("INSERT users\n+ user_identities")]
+    R --> S
+
+    B -->|"Sign in, email"| L["POST /api/auth/login"]
+    L --> T{"bcrypt.compare\nmatches?"}
+    T -->|"no"| U["401 Incorrect username\nor password"]
+    T -->|"yes"| S
+
+    S --> N["Redirect /"]
+    N --> V["GET / - home, session user shown"]
+    V -->|"view a profile"| Y["GET /api/users/:username"]
+    Y --> Z[("SELECT public fields\n+ user_prompts")]
+    V -->|"done"| W["GET /logout - destroys session"]
