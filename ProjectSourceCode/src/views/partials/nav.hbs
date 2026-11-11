@@ -1,0 +1,14 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="/"><i class="bi bi-git"></i> GitMatch</a>
+    <div class="d-flex gap-2 align-items-center">
+      {{#if user}}
+      <span class="navbar-text text-light small">Signed in as <strong>{{user.username}}</strong></span>
+      <a class="btn btn-outline-light btn-sm" href="/profile"> </a>Profile</a>
+      <a class="btn btn-outline-light btn-sm" href="/logout">Log out</a>
+      {{else}}
+      <a class="btn btn-outline-light btn-sm" href="/register">Register</a>
+      {{/if}}
+    </div>
+  </div>
+</nav>

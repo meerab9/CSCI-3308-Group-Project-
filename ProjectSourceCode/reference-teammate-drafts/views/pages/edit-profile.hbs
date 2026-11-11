@@ -1,0 +1,365 @@
+<div class="auth-page">
+
+  <div class="auth-card">
+
+    <h1 class="auth-title">
+      Edit Profile
+    </h1>
+
+    <p class="auth-subtitle">
+      Update how other GitMatch users see you.
+    </p>
+
+
+    {{#if message}}
+
+      <div class="alert alert-danger">
+        {{message}}
+      </div>
+
+    {{/if}}
+
+
+    <form
+      action="/profile/edit"
+      method="POST"
+      enctype="multipart/form-data"
+      id="edit-profile-form"
+    >
+
+
+      <!-- PROFILE PICTURE -->
+
+      <div class="text-center mb-4">
+
+        <label
+          for="profile_picture"
+          class="avatar-picker"
+        >
+
+          {{#if user.profile_picture}}
+
+            <img
+              id="avatar-preview"
+              class="avatar-img"
+              src="{{user.profile_picture}}"
+              alt="Profile picture"
+            >
+
+            <i
+              id="avatar-placeholder"
+              class="bi bi-person-circle avatar-placeholder d-none"
+            ></i>
+
+          {{else}}
+
+            <img
+              id="avatar-preview"
+              class="avatar-img d-none"
+              alt="Profile picture"
+            >
+
+            <i
+              id="avatar-placeholder"
+              class="bi bi-person-circle avatar-placeholder"
+            ></i>
+
+          {{/if}}
+
+
+          <span class="avatar-edit">
+            <i class="bi bi-camera-fill"></i>
+          </span>
+
+        </label>
+
+
+        <input
+          type="file"
+          id="profile_picture"
+          name="profile_picture"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          class="d-none"
+        >
+
+
+        <div class="form-text">
+          Upload a new picture to replace the current one.
+        </div>
+
+      </div>
+
+
+      <!-- USERNAME -->
+
+      <div class="mb-3">
+
+        <label class="form-label">
+          Username
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          value="{{user.username}}"
+          disabled
+        >
+
+        <div class="form-text">
+          Username cannot be changed.
+        </div>
+
+      </div>
+
+
+      <!-- GITHUB -->
+
+      <div class="mb-3">
+
+        <label
+          for="github"
+          class="form-label"
+        >
+          GitHub
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="github"
+          name="github"
+          value="{{user.github}}"
+          maxlength="100"
+        >
+
+      </div>
+
+
+      <!-- SCHOOL -->
+
+      <div class="mb-3">
+
+        <label
+          for="school"
+          class="form-label"
+        >
+          School
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="school"
+          name="school"
+          value="{{user.school}}"
+          maxlength="100"
+        >
+
+      </div>
+
+
+      <!-- LOOKING FOR -->
+
+      <div class="mb-3">
+
+        <span class="form-label d-block">
+          I'm here to...
+        </span>
+
+
+        <div class="choice-grid">
+
+
+          <input
+            type="radio"
+            class="btn-check"
+            name="looking_for"
+            id="edit-study"
+            value="study"
+            {{#if (eq user.looking_for "study")}}
+              checked
+            {{/if}}
+          >
+
+          <label
+            class="choice-card"
+            for="edit-study"
+          >
+            <i class="bi bi-book"></i>
+            <span>Study</span>
+          </label>
+
+
+          <input
+            type="radio"
+            class="btn-check"
+            name="looking_for"
+            id="edit-friends"
+            value="friends"
+            {{#if (eq user.looking_for "friends")}}
+              checked
+            {{/if}}
+          >
+
+          <label
+            class="choice-card"
+            for="edit-friends"
+          >
+            <i class="bi bi-people"></i>
+            <span>Make friends</span>
+          </label>
+
+
+          <input
+            type="radio"
+            class="btn-check"
+            name="looking_for"
+            id="edit-both"
+            value="both"
+            {{#if (eq user.looking_for "both")}}
+              checked
+            {{/if}}
+          >
+
+          <label
+            class="choice-card"
+            for="edit-both"
+          >
+            <i class="bi bi-stars"></i>
+            <span>Both</span>
+          </label>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- CS INTERESTS -->
+
+      <div class="mb-3">
+
+        <label
+          for="cs_interests"
+          class="form-label"
+        >
+          Computer Science Interests
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="cs_interests"
+          name="cs_interests"
+          maxlength="500"
+          value="{{user.cs_interests}}"
+        >
+
+      </div>
+
+
+      <!-- OTHER INTERESTS -->
+
+      <div class="mb-4">
+
+        <label
+          for="other_interests"
+          class="form-label"
+        >
+          Other Interests
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="other_interests"
+          name="other_interests"
+          maxlength="500"
+          value="{{user.other_interests}}"
+        >
+
+      </div>
+
+
+      <!-- PROMPTS -->
+
+      <h4 class="mb-3">
+        Profile Prompts
+      </h4>
+
+
+      {{#each promptSlots}}
+
+        <div
+          class="prompt-card mb-3"
+          data-prompt-slot
+        >
+
+          <select
+            class="form-select prompt-select mb-2"
+            name="prompt"
+          >
+
+            <option value="">
+              Choose a prompt...
+            </option>
+
+
+            {{#each options}}
+
+              <option
+                value="{{this}}"
+                {{#if (eq this ../selected)}}
+                  selected
+                {{/if}}
+              >
+
+                {{this}}
+
+              </option>
+
+            {{/each}}
+
+          </select>
+
+
+          <textarea
+            class="form-control"
+            name="prompt_answer"
+            rows="2"
+            maxlength="500"
+            placeholder="Your answer"
+          >{{answer}}</textarea>
+
+        </div>
+
+      {{/each}}
+
+
+      <div class="d-flex gap-2 mt-4">
+
+        <a
+          href="/profile"
+          class="btn btn-light"
+        >
+          Cancel
+        </a>
+
+
+        <button
+          type="submit"
+          class="btn btn-brand flex-grow-1"
+        >
+          Save Changes
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<script src="/resources/js/edit-profile.js"></script>

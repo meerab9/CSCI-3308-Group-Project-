@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Match - Login</title>
+    <style>                        
+        /* general page styling */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+
+            background: linear-gradient(
+                135deg,
+                #0b0d0b,
+                #141b14,
+                #0b0d0b
+            );
+
+            color: #e8eee5;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        /* make all form elements use the same font */
+        input,
+        button,
+        textarea,
+        select {
+            font-family: inherit;
+        }
+
+        /* main login container */
+        .page {
+            width: min(100%, 520px);
+            min-height: min(760px, calc(100vh - 48px));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding: 55px 35px;
+
+            background: rgba(20, 27, 20, 0.75);
+            border: 1px solid #485443;
+            border-radius: 14px;
+
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* page label */
+        .page-label {
+            position: absolute;
+            top: -13px;
+            left: 28px;
+            margin: 0;
+            padding: 3px 12px;
+
+            background-color: #0b0d0b;
+            color: #a5b995;
+
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* git match title */
+        h1 {
+            margin: 35px 0 90px;
+            color: #b5cc9e;
+            font-size: clamp(30px, 6vw, 38px);
+            font-weight: bold;
+            letter-spacing: 3px;
+
+            text-shadow: 0 0 18px rgba(181, 204, 158, 0.15);
+        }
+
+        /* login form */
+        .login-form {
+            width: min(100%, 290px);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 30px;
+        }
+
+        /* username and password fields */
+        .login-form input {
+            width: 100%;
+            height: 52px;
+            padding: 0 17px;
+
+            background-color: #151b15;
+            color: #e8eee5;
+
+            border: 1px solid #485443;
+            border-radius: 7px;
+
+            font-family: inherit;
+            font-size: 15px;
+            letter-spacing: 1px;
+
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        /* input placeholders */
+        .login-form input::placeholder {
+            color: #87927f;
+            opacity: 1;
+            font-family: inherit;
+        }
+
+        /* input focus effect */
+        .login-form input:focus {
+            border-color: #a5c28a;
+            background-color: #192119;
+            box-shadow: 0 0 12px rgba(165, 194, 138, 0.12);
+        }
+
+        /* login button */
+        .login-form button {
+            align-self: center;
+            min-width: 155px;
+            margin-top: 12px;
+            padding: 14px 25px;
+
+            background-color: #a5b995;
+            color: #10150e;
+
+            border: 1px solid #a5b995;
+            border-radius: 7px;
+
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        /* button hover effect */
+        .login-form button:hover {
+            background-color: transparent;
+            color: #b5cc9e;
+            box-shadow: 0 0 15px rgba(165, 194, 138, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* button click effect */
+        .login-form button:active {
+            transform: translateY(0);
+        }
+
+        /* keyboard accessibility */
+        .login-form button:focus-visible {
+            outline: 2px solid #b5cc9e;
+            outline-offset: 4px;
+        }
+
+        /* smaller screens */
+        @media (max-width: 500px) {
+            .page {
+                min-height: 650px;
+                padding: 45px 22px;
+            }
+
+            h1 {
+                margin-bottom: 75px;
+            }
+        }
+        </style>
+</head>
+
+<body>
+    <main>
+        <p>login</p>
+
+        <h1>git match</h1>
+
+        <form action="#" method="POST">
+
+            <input 
+                type="text" 
+                name="username" 
+                placeholder="username"
+                required
+            >
+
+            <input 
+                type="password" 
+                name="password" 
+                placeholder="password"
+                required
+            >
+
+            <button type="submit">login</button>
+
+        </form>
+    </main>
+
+</body>
+</html>
