@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitMatch - Discover</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="discover.css">
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="gm-nav d-flex align-items-center px-4">
+
+        <a href="#" class="gm-logo">
+            <i class="bi bi-git"></i> Git<span>Match</span>
+        </a>
+
+        <ul class="nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Discover</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Messages</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Profile</a>
+            </li>
+        </ul>
+
+    </nav>
+
+
+    <!-- Main Discover Page -->
+    <main class="discover-container">
+
+        <!-- Page Heading -->
+        <div class="discover-heading">
+            <h1>Discover</h1>
+            <p>Find people who share your interests and want to build something together.</p>
+        </div>
+
+
+        <!-- Filter Options -->
+        <div class="filter-section">
+
+            <button class="filter-btn active" data-filter="all">
+                All
+            </button>
+
+            <button class="filter-btn" data-filter="software">
+                Software
+            </button>
+
+            <button class="filter-btn" data-filter="hardware">
+                Hardware
+            </button>
+
+            <button class="filter-btn" data-filter="design">
+                Design
+            </button>
+
+            <button class="filter-btn" data-filter="ai">
+                AI / Machine Learning
+            </button>
+
+        </div>
+
+
+        <!-- Profile Feed -->
+        <section class="profile-feed" id="profileFeed">
+
+
+            <!-- Profile 1 -->
+            <article class="profile-card" data-category="software ai">
+
+                <div class="profile-image profile-one">
+                    <span class="profile-label">
+                        <i class="bi bi-code-slash"></i> Software Developer
+                    </span>
+                </div>
+
+                <div class="profile-content">
+
+                    <div class="profile-header">
+                        <div>
+                            <h2>Ava Chen, 20</h2>
+                            <p class="username">@ava_codes</p>
+                        </div>
+
+                        <span class="online-status">Online</span>
+                    </div>
+
+                    <p class="profile-bio">
+                        Computer science student passionate about building
+                        applications that make everyday life easier.
+                        Currently working on a personal finance app.
+                    </p>
+
+                    <div class="profile-details">
+                        <span><i class="bi bi-geo-alt"></i> Boulder, CO</span>
+                        <span><i class="bi bi-mortarboard"></i> Computer Science</span>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Skills</h6>
+                        <div class="profile-tags">
+                            <span>Python</span>
+                            <span>React</span>
+                            <span>JavaScript</span>
+                            <span>SQL</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Interests</h6>
+                        <div class="profile-tags interests">
+                            <span>AI</span>
+                            <span>Startups</span>
+                            <span>App Development</span>
+                        </div>
+                    </div>
+
+                    <div class="project-preview">
+                        <h6><i class="bi bi-folder2-open"></i> Current Project</h6>
+                        <strong>Budget Buddy</strong>
+                        <p>A React Native application for tracking personal finances.</p>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="pass-btn" onclick="handlePass(this)">
+                            <i class="bi bi-x-lg"></i> Pass
+                        </button>
+
+                        <button class="connect-btn" onclick="handleConnect(this)">
+                            <i class="bi bi-person-plus"></i> Connect
+                        </button>
+                    </div>
+
+                </div>
+            </article>
+
+
+            <!-- Profile 2 -->
+            <article class="profile-card" data-category="hardware software">
+
+                <div class="profile-image profile-two">
+                    <span class="profile-label">
+                        <i class="bi bi-cpu"></i> Hardware Engineer
+                    </span>
+                </div>
+
+                <div class="profile-content">
+
+                    <div class="profile-header">
+                        <div>
+                            <h2>Marcus Lee, 21</h2>
+                            <p class="username">@devmarcus</p>
+                        </div>
+                    </div>
+
+                    <p class="profile-bio">
+                        Engineering student interested in robotics,
+                        embedded systems, and creating innovative
+                        hardware solutions.
+                    </p>
+
+                    <div class="profile-details">
+                        <span><i class="bi bi-geo-alt"></i> Denver, CO</span>
+                        <span><i class="bi bi-mortarboard"></i> Electrical Engineering</span>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Skills</h6>
+                        <div class="profile-tags">
+                            <span>C++</span>
+                            <span>Arduino</span>
+                            <span>CAD</span>
+                            <span>Python</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Interests</h6>
+                        <div class="profile-tags interests">
+                            <span>Robotics</span>
+                            <span>3D Printing</span>
+                            <span>Embedded Systems</span>
+                        </div>
+                    </div>
+
+                    <div class="project-preview">
+                        <h6><i class="bi bi-folder2-open"></i> Current Project</h6>
+                        <strong>Autonomous Rover</strong>
+                        <p>Building a small autonomous robot using sensors and Arduino.</p>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="pass-btn" onclick="handlePass(this)">
+                            <i class="bi bi-x-lg"></i> Pass
+                        </button>
+
+                        <button class="connect-btn" onclick="handleConnect(this)">
+                            <i class="bi bi-person-plus"></i> Connect
+                        </button>
+                    </div>
+
+                </div>
+            </article>
+
+
+            <!-- Profile 3 -->
+            <article class="profile-card" data-category="design software">
+
+                <div class="profile-image profile-three">
+                    <span class="profile-label">
+                        <i class="bi bi-palette"></i> UI/UX Designer
+                    </span>
+                </div>
+
+                <div class="profile-content">
+
+                    <div class="profile-header">
+                        <div>
+                            <h2>Priya Patel, 20</h2>
+                            <p class="username">@priya.designs</p>
+                        </div>
+                    </div>
+
+                    <p class="profile-bio">
+                        Designer who loves combining creativity and technology.
+                        Interested in creating accessible and intuitive
+                        digital experiences.
+                    </p>
+
+                    <div class="profile-details">
+                        <span><i class="bi bi-geo-alt"></i> Boulder, CO</span>
+                        <span><i class="bi bi-mortarboard"></i> Design</span>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Skills</h6>
+                        <div class="profile-tags">
+                            <span>Figma</span>
+                            <span>HTML</span>
+                            <span>CSS</span>
+                            <span>Prototyping</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Interests</h6>
+                        <div class="profile-tags interests">
+                            <span>UI/UX</span>
+                            <span>Accessibility</span>
+                            <span>Web Design</span>
+                        </div>
+                    </div>
+
+                    <div class="project-preview">
+                        <h6><i class="bi bi-folder2-open"></i> Current Project</h6>
+                        <strong>Campus Connect</strong>
+                        <p>Designing a platform to help students find collaborators.</p>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="pass-btn" onclick="handlePass(this)">
+                            <i class="bi bi-x-lg"></i> Pass
+                        </button>
+
+                        <button class="connect-btn" onclick="handleConnect(this)">
+                            <i class="bi bi-person-plus"></i> Connect
+                        </button>
+                    </div>
+
+                </div>
+            </article>
+
+
+            <!-- Profile 4 -->
+            <article class="profile-card" data-category="ai software">
+
+                <div class="profile-image profile-four">
+                    <span class="profile-label">
+                        <i class="bi bi-robot"></i> AI Developer
+                    </span>
+                </div>
+
+                <div class="profile-content">
+
+                    <div class="profile-header">
+                        <div>
+                            <h2>Jordan Kim, 22</h2>
+                            <p class="username">@jordan_dev</p>
+                        </div>
+                    </div>
+
+                    <p class="profile-bio">
+                        Interested in machine learning, data science,
+                        and using technology to solve real-world problems.
+                    </p>
+
+                    <div class="profile-details">
+                        <span><i class="bi bi-geo-alt"></i> Fort Collins, CO</span>
+                        <span><i class="bi bi-mortarboard"></i> Computer Engineering</span>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Skills</h6>
+                        <div class="profile-tags">
+                            <span>Python</span>
+                            <span>TensorFlow</span>
+                            <span>SQL</span>
+                            <span>Java</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h6>Interests</h6>
+                        <div class="profile-tags interests">
+                            <span>Machine Learning</span>
+                            <span>Data Science</span>
+                            <span>AI</span>
+                        </div>
+                    </div>
+
+                    <div class="project-preview">
+                        <h6><i class="bi bi-folder2-open"></i> Current Project</h6>
+                        <strong>Study Assistant AI</strong>
+                        <p>Developing an AI-powered tool to help students organize coursework.</p>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="pass-btn" onclick="handlePass(this)">
+                            <i class="bi bi-x-lg"></i> Pass
+                        </button>
+
+                        <button class="connect-btn" onclick="handleConnect(this)">
+                            <i class="bi bi-person-plus"></i> Connect
+                        </button>
+                    </div>
+
+                </div>
+            </article>
+
+        </section>
+
+        <div id="emptyState" class="empty-state" hidden>
+            <i class="bi bi-people"></i>
+            <h3>No more profiles</h3>
+            <p>Check back later for more people to connect with.</p>
+        </div>
+
+    </main>
+
+
+    <!-- Connection Confirmation Modal -->
+    <div class="modal fade" id="connectionModal" tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-body text-center p-4">
+
+                    <i class="bi bi-check-circle-fill success-icon"></i>
+
+                    <h3>Connection Sent!</h3>
+
+                    <p id="connectionMessage">
+                        Your connection request has been sent.
+                    </p>
+
+                    <button class="btn btn-gm" data-bs-dismiss="modal">
+                        Continue Discovering
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="discover.js"></script>
+
+</body>
+</html>
