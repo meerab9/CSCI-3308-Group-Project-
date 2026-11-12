@@ -12,7 +12,7 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
-
+app.use(express.static(__dirname + '/'));
 
 // -------------------------------------
 // Handlebars
@@ -20,7 +20,8 @@ const app = express();
 
 const hbs = handlebars.create({
   extname: 'hbs',
-  layoutsDir: path.join(__dirname, 'views/layouts')
+  layoutsDir: path.join(__dirname, 'views'),
+  defaultLayout: 'layouts-main'
 });
 
 app.engine('hbs', hbs.engine);
@@ -72,11 +73,63 @@ const db = pgp(dbConfig);
 // -------------------------------------
 
 app.get('/', (req, res) => {
-
-  res.redirect('/register');
-
+    res.render('pages/registerORlogin');
 });
 
+// -------------------------------------
+// GET Login Page
+// -------------------------------------
+
+app.get('/login', (req, res) => {
+    res.render('pages/login');
+});
+
+// -------------------------------------
+// POST Login
+// -------------------------------------
+
+app.post('/login', async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    try {
+        // Find the user in the database
+        const user = await db.oneOrNone(
+            'SELECT * FROM users WHERE username = $1',
+            [username]
+        );
+
+        // Check if the username exists
+        if (!user) {
+            return res.render('pages/login', {
+                message: 'Invalid username or password.'
+            });
+        }
+
+        // Compare the entered password with the stored hash
+        const passwordMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        // Check if the password is correct
+        if (!passwordMatch) {
+            return res.render('pages/login', {
+                message: 'Invalid username or password.'
+            });
+        }
+
+        // Temporary success response
+        res.send('Login successful!');
+
+    } catch (error) {
+        console.log(error);
+
+        res.render('pages/login', {
+            message: 'Something went wrong. Please try again.'
+        });
+    }
+});
 
 // -------------------------------------
 // GET Register Page
