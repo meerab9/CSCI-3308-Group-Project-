@@ -1,0 +1,10 @@
+1. Decisions made
+We should be on different branches and committing through pull requests. We should communicate through discord more often and clearly. 
+And have all our meetings in person after class on Wednesdays. We need to reorganize our file structure and code and coordinate it better with each other. 
+We need to standardize a style and all use Handlebars for our user interface.
+
+2. Alternative actions/options discussed
+We can have a zoom link and be in person if needed. 
+
+3. Follow-up items, including agreed-on roles and responsibilities You may or may not have content for each of the points above.
+In lab we will clarify all our roles and tasks for next week and our next epic. The main thing we need to do is organizing our file structure and overall code.

@@ -1,0 +1,6 @@
+For the first meeting, we talked about what areas we wanted to focus on. 
+Meera, Mailie, Jessica, and Wayne decided to focus on more of the front end work with HTML, CSS, and JavaScript. 
+Gaurav and Stryder are going to work mainly on the backend stuff with Database and SQL work.
+Although we decided to mainly stay within our areas, we are going to help out each other as needed. 
+
+Our weekly meetings will be in person on Wednesday's right after Software Dev Lecture where we can work together and share our updates. 
