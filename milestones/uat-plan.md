@@ -3,7 +3,7 @@
 ## Scope
 
 1. **Account creation & sign-in** — issues #4, #9, #10, #2 (registration page, registration backend, login backend/page). Implemented; covered by automated integration tests in `ProjectSourceCode/test/server.spec.js`.
-2. **Messaging with a connection** — issues #3 (messaging UI, Done) and #22 (messaging page, Todo). UI mockups exist (`message.html`, `userinterface.html`) but are not yet wired to routes or a database table.
+2. **Messaging with a connection** — issues #3 (messaging UI) and #22 (messaging page). Implemented at `/messages` (page) and `/api/conversations`, `/api/messages/:username` (JSON), backed by the `connections` and `messages` tables; covered by automated integration tests in `ProjectSourceCode/test/messages.spec.js`. Creating connections from the UI depends on the matching feature; until then, testers can load `ProjectSourceCode/dev-seed/messaging-demo.sql` to get connected accounts.
 3. **Profile editing** — issue #25 (user profile editing page, In Progress). Not yet implemented, users can currently only set these fields once, at registration.
 
 ## Acceptance criteria
@@ -32,8 +32,8 @@
 |---|---|---|---|---|---|---|---|---|---|---|
 | UAT-01 | Account creation (register) | Valid signup creates the account and confirms it | Registration page open; user signed out | Unique username `uat_demo1`; password `TestPass123!` | 1. Enter username. 2. Enter password + confirm. 3. Submit. | Account is created; page shows an "account created" confirmation. | Planned: T1 | Not run | Not run | None yet |
 | UAT-02 | Sign-in (login) | Wrong credentials are rejected | An account already exists | That account's username + wrong password | 1. Go to sign-in. 2. Enter username + wrong password. 3. Submit. | Sign-in is rejected with a clear "incorrect username or password" message; no session created. | Planned: T2 | Not run | Not run | None yet |
-| UAT-03 | Messaging | Signed-in user can message a connection | Two accounts exist and are connected; both signed in on separate sessions | A short text message | 1. Open conversation with the connection. 2. Type a message. 3. Send. | Message appears in the conversation thread for both users. | Planned: T3 | Not run | Not run | Feature not yet implemented (issue #22) |
-| UAT-04 | Messaging | User cannot message a non-connection | Two accounts exist, not connected | — | 1. Attempt to open a conversation with the non-connection. | Access is blocked; user cannot view or send messages in that thread. | Planned: T3 | Not run | Not run | Feature not yet implemented (issue #22) |
+| UAT-03 | Messaging | Signed-in user can message a connection | Two accounts exist and are connected; both signed in on separate sessions | A short text message | 1. Open conversation with the connection. 2. Type a message. 3. Send. | Message appears in the conversation thread for both users. | Planned: T3 | Not run | Not run | None yet |
+| UAT-04 | Messaging | User cannot message a non-connection | Two accounts exist, not connected | — | 1. Attempt to open a conversation with the non-connection. | Access is blocked; user cannot view or send messages in that thread. | Planned: T3 | Not run | Not run | None yet |
 | UAT-05 | Profile editing | Signed-in user can edit and save a profile field | Account exists and is signed in | New value for "CS interests" | 1. Open profile edit. 2. Change CS interests. 3. Save. | Profile page shows the updated value. | Planned: T1 | Not run | Not run | Feature not yet implemented (issue #25) |
 | UAT-06 | Profile editing | Clearing a required field on edit is rejected | Account exists and is signed in | Blank value for a required field | 1. Open profile edit. 2. Clear the field. 3. Save. | Edit is rejected with a clear message; previous value is kept. | Planned: T1 | Not run | Not run | Feature not yet implemented (issue #25) |
 

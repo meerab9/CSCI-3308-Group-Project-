@@ -109,8 +109,23 @@ app.get('/welcome', (req, res) => {
 // JSON API (auth + profile reads) — see routes/api.js.
 app.use('/api', require('./routes/api'));
 
+// JSON API for messaging (conversations, threads, sending) — see routes/messages.js.
+app.use('/api', require('./routes/messages'));
+
 app.get('/', (req, res) => {
   res.render('pages/home');
+});
+
+// Messaging page. The page itself is a shell; resources/js/messages.js loads
+// conversations and threads from the /api messaging routes.
+app.get('/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).render('pages/home', {
+      message: 'Sign in to see your messages.',
+      error: true,
+    });
+  }
+  res.render('pages/messages');
 });
 
 app.get('/register', (req, res) => {

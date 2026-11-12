@@ -77,10 +77,38 @@ returning JSON):
   harness can reach the app at all — it's not part of the registration
   contract.
 
+### Messaging API tests — `test/messages.spec.js`
+
+**Messaging contract** (`src/routes/messages.js`). Every route needs a
+signed-in session; reading or sending a thread also needs an *accepted*
+row in `connections` between the two users (either direction).
+
+| Route | Success | Failure |
+|---|---|---|
+| `GET /api/connections` | `200` `{ connections: [{ username, profile_picture, github, school }] }`, accepted connections only | `401` not signed in |
+| `GET /api/conversations` | `200` `{ conversations: [...] }`, newest first, one row per connected person with their last message | `401` not signed in |
+| `GET /api/messages/:username?after=<id>` | `200` `{ messages: [...] }`, oldest first; with `after`, only messages newer than that id | `401` not signed in, `403` not connected, `400` bad `after` |
+| `POST /api/messages/:username` with JSON `{ "body": "..." }` | `201` `{ message: { message_id, sender, recipient, body, sent_at } }`; body is trimmed before saving | `401` not signed in, `403` not connected, `400` empty or over 2000 characters |
+
+The tests create three users (alice and bob connected, carol with only a
+*pending* request from alice), log in for real with a chai-http agent, and
+check:
+
+- no session → `401`
+- alice → bob: `201`, exactly one saved row, and bob sees it in his thread and at the top of his conversation list
+- polling with `?after` returns only the newer message
+- alice → carol (not connected): `403` for both reading and sending, and zero rows saved
+- empty (whitespace-only) message → `400`, and zero rows saved
+- `/api/connections` lists only accepted connections
+
+These back up UAT-03 and UAT-04 in `milestones/uat-plan.md`.
+
 ### Cleanup
 
-Both registration tests delete their own test usernames in `beforeEach`
-and `afterEach`, so the suite is safe to run repeatedly (confirmed by
-running it twice back to back — both runs passed 8/8). The database pool
+The registration tests delete their own test usernames in `beforeEach`
+and `afterEach`. The messaging tests delete their messages after each test
+and their three users at the end (`ON DELETE CASCADE` removes their
+connections and messages too). So the suite is safe to run repeatedly
+(confirmed by running it twice back to back — both runs passed 16/16). The database pool
 is closed in an `after()` hook via `pgp.end()`, so Mocha exits cleanly on
 its own, with no `--exit` flag needed.
