@@ -4,6 +4,7 @@
     <div class="d-flex gap-2 align-items-center">
       {{#if user}}
       <span class="navbar-text text-light small">Signed in as <strong>{{user.username}}</strong></span>
+      <a class="btn btn-outline-light btn-sm" href="/profile"> </a>Profile</a>
       <a class="btn btn-outline-light btn-sm" href="/logout">Log out</a>
       {{else}}
       <a class="btn btn-outline-light btn-sm" href="/register">Register</a>

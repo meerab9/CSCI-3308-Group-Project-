@@ -1,0 +1,42 @@
+erDiagram
+    USERS {
+        varchar username PK
+        char password "nullable, OAuth-only accounts"
+        varchar profile_picture
+        varchar github
+        varchar school
+        varchar cs_interests
+        varchar other_interests
+        varchar looking_for "study | friends | both"
+        timestamp created_at
+    }
+    USER_PROMPTS {
+        int prompt_id PK
+        varchar username FK
+        varchar prompt
+        varchar answer
+    }
+    USER_IDENTITIES {
+        varchar provider PK
+        varchar provider_id PK
+        varchar username FK
+    }
+    CONNECTIONS {
+        varchar requester PK,FK
+        varchar addressee PK,FK
+        varchar status "pending | accepted | rejected"
+        timestamp created_at
+    }
+    MESSAGES {
+        int message_id PK
+        varchar sender FK
+        varchar recipient FK
+        varchar body "1-2000 chars"
+        timestamp sent_at
+    }
+    USERS ||--o{ USER_PROMPTS : "answers (max 3, app-enforced)"
+    USERS ||--o{ USER_IDENTITIES : "signs in with"
+    USERS ||--o{ CONNECTIONS : "requests"
+    USERS ||--o{ CONNECTIONS : "receives"
+    USERS ||--o{ MESSAGES : "sends"
+    USERS ||--o{ MESSAGES : "receives"

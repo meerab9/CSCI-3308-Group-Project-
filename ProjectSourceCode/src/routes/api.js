@@ -4,8 +4,9 @@
 
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../db');
+const { db } = require('../db');
 const { isValidUsername, isValidPassword, normalizeGithub, trimOrNull } = require('../lib/validators');
+const validateRegistration = require('../validateRegistration');
 
 const router = express.Router();
 const LOOKING_FOR_OPTIONS = ['study', 'friends', 'both'];
@@ -28,6 +29,11 @@ router.post('/auth/register', async (req, res) => {
   const github = normalizeGithub(body.github);
   if (github === null) {
     return res.status(400).json({ error: 'GitHub must be a username or a github.com profile link.' });
+  }
+  // Final isolated-function gate before hashing (Lab 10 requirement), run
+  // after the field-specific checks above so error messages stay precise.
+  if (!validateRegistration({ username, password: body.password })) {
+    return res.status(400).json({ error: 'Invalid registration input.' });
   }
 
   try {
