@@ -1,0 +1,99 @@
+<link href="/resources/css/messages.css" rel="stylesheet">
+
+<div class="gm-shell" id="shell" data-me="{{user.username}}">
+
+  <!-- ===== Sidebar: conversation list ===== -->
+  <aside class="gm-sidebar">
+    <div class="gm-sidebar-header">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="m-0">Messages</h5>
+        <button type="button" class="btn btn-gm btn-sm" id="newChatBtn" data-bs-toggle="modal" data-bs-target="#newChatModal">
+          <i class="bi bi-plus-lg"></i> New Chat
+        </button>
+      </div>
+      <input type="text" class="form-control form-control-sm gm-search" id="searchInput" placeholder="Search conversations..." aria-label="Search conversations">
+    </div>
+    <div class="gm-convo-list" id="convoList">
+      <div class="gm-empty-list"><span class="spinner-border spinner-border-sm"></span> Loading...</div>
+    </div>
+  </aside>
+
+  <!-- ===== Chat pane ===== -->
+  <section class="gm-chat" id="chatPane">
+    <div class="gm-placeholder" id="chatPlaceholder">
+      <i class="bi bi-chat-square-text mb-3"></i>
+      <h5>No conversation selected</h5>
+      <p class="small mb-0">Pick a conversation, or hit <b>New Chat</b> to message one of your connections.</p>
+    </div>
+
+    <div id="chatActive" class="d-none flex-column h-100">
+      <div class="gm-chat-header">
+        <button type="button" class="btn btn-sm btn-outline-secondary gm-back" id="backBtn" aria-label="Back to conversations">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <div class="gm-avatar" id="chatAvatar"></div>
+        <div class="flex-grow-1 overflow-hidden">
+          <div class="fw-semibold" id="chatName"></div>
+          <div class="small gm-muted" id="chatHandle"></div>
+        </div>
+        <span class="gm-tag d-none" id="chatTag"></span>
+      </div>
+
+      <div class="gm-messages" id="messages" aria-live="polite"></div>
+
+      <form class="gm-composer" id="messageForm" novalidate>
+        <div class="d-flex gap-2 align-items-end">
+          <textarea class="form-control gm-input" id="messageInput" rows="1" maxlength="2000"
+                    placeholder="Write a message..." aria-label="Message"></textarea>
+          <button type="submit" class="btn btn-gm px-3" id="sendBtn" aria-label="Send">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </div>
+        <div class="gm-error" id="messageError"></div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- ===== New Chat modal ===== -->
+<div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content gm-modal" id="newChatForm" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title" id="newChatLabel"><i class="bi bi-person-plus"></i> Start a New Chat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="recipientInput">To (username) *</label>
+        <input type="text" class="form-control gm-input mb-1" id="recipientInput" placeholder="@username" autocomplete="off">
+        <div class="gm-error" id="recipientError"></div>
+
+        <label class="form-label mt-3" for="firstMessageInput">Message *</label>
+        <textarea class="form-control gm-input" id="firstMessageInput" rows="3" maxlength="2000"
+                  placeholder="Hey! Saw your project and wanted to collab..."></textarea>
+        <div class="gm-error" id="firstMessageError"></div>
+
+        <div class="mt-3">
+          <div class="form-label mb-1">Your connections</div>
+          <div id="friendPills"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-gm" id="newChatSendBtn">Send</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Toast (new chat sent) ===== -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="sentToast" class="toast gm-toast align-items-center" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body"><i class="bi bi-check-circle-fill text-success"></i> Message sent!</div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script src="/resources/js/messages.js" defer></script>

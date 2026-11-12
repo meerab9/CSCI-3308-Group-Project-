@@ -3,6 +3,7 @@
     <a class="navbar-brand fw-bold" href="/"><i class="bi bi-git"></i> GitMatch</a>
     <div class="d-flex gap-2 align-items-center">
       {{#if user}}
+      <a class="btn btn-outline-light btn-sm" href="/messages"><i class="bi bi-chat-dots"></i> Messages</a>
       <span class="navbar-text text-light small">Signed in as <strong>{{user.username}}</strong></span>
       <a class="btn btn-outline-light btn-sm" href="/logout">Log out</a>
       {{else}}
