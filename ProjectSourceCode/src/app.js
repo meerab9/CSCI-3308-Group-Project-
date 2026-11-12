@@ -109,23 +109,8 @@ app.get('/welcome', (req, res) => {
 // JSON API (auth + profile reads) — see routes/api.js.
 app.use('/api', require('./routes/api'));
 
-// JSON API for messaging (conversations, threads, sending) — see routes/messages.js.
-app.use('/api', require('./routes/messages'));
-
 app.get('/', (req, res) => {
   res.render('pages/home');
-});
-
-// Messaging page. The page itself is a shell; resources/js/messages.js loads
-// conversations and threads from the /api messaging routes.
-app.get('/messages', (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).render('pages/home', {
-      message: 'Sign in to see your messages.',
-      error: true,
-    });
-  }
-  res.render('pages/messages');
 });
 
 app.get('/register', (req, res) => {
@@ -309,6 +294,16 @@ async function getJson(url, token) {
 // <!-- Helpers -->
 // *****************************************************
 
+// Only allow logged-in users to access a route.
+function requireAuth(req, res, next) {
+
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+
+  next();
+}
+
 // Runs multer so upload errors render a message instead of crashing.
 function withUpload(req, res, next) {
   upload.single('profile_picture')(req, res, err => {
@@ -318,6 +313,29 @@ function withUpload(req, res, next) {
       err.code === 'LIMIT_FILE_SIZE' ? 'Profile picture must be 2 MB or smaller.' : err.message;
     failRegister(req, res, message);
   });
+}
+
+// Handles profile piocture uploads when editing a profile, if upload succeeds, continue to profile update route. 
+// If fails, store the upload error so the edit page can display it.
+function withProfileUpload(req, res, next) {
+
+  upload.single('profile_picture')(req, res, err => {
+
+    req.body = req.body || {};
+
+    if (!err) {
+      return next();
+    }
+
+    req.profileUploadError =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? 'Profile picture must be 2 MB or smaller.'
+        : err.message;
+
+    next();
+
+  });
+
 }
 
 // Re-render the right form (email or OAuth-complete) with an error.
