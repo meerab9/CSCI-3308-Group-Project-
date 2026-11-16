@@ -109,6 +109,33 @@ app.get('/welcome', (req, res) => {
 // JSON API (auth + profile reads) — see routes/api.js.
 app.use('/api', require('./routes/api'));
 
+// JSON API for messaging (conversations, threads, sending) — see routes/messages.js.
+app.use('/api', require('./routes/messages'));
+
+// Messaging page. The page itself is a shell; resources/js/messages.js loads
+// conversations and threads from the /api messaging routes.
+app.get('/messages', requireAuth, (req, res) => {
+  res.render('pages/messages');
+});
+
+app.get('/login', (req, res) => {
+  if (req.session.user) return res.redirect('/');
+  res.render('pages/login', loginViewData());
+});
+
+app.post('/login', async (req, res) => {
+  const username = (req.body.username || '').trim();
+  const password = req.body.password || '';
+  const user = await db.oneOrNone('SELECT username, password FROM users WHERE username = $1;', [username]);
+  // OAuth-only accounts have no password hash, so they can't log in this way.
+  const match = user && user.password && (await bcrypt.compare(password, user.password));
+  if (!match) {
+    return res.status(401).render('pages/login', loginViewData({ username }, 'Incorrect username or password.'));
+  }
+  req.session.user = { username: user.username };
+  req.session.save(() => res.redirect('/'));
+});
+
 app.get('/', (req, res) => {
   res.render('pages/home');
 });
@@ -151,16 +178,7 @@ app.post('/register/complete', withUpload, async (req, res) => {
   await createUser(req, res, { identity: pending, fallbackPicture: pending.avatarUrl });
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.render('pages/home', { user: null, message: 'Logged out.' });
-  });
-});
-
-// *****************************************************
-// Jessica's routes for profile pages
-// *****************************************************
-
+//Jessica's routes for profile pages
 //GET REQUEST FOR PROFILE PAGE
 app.get('/profile', requireAuth, async (req, res) => {
 
@@ -578,6 +596,15 @@ app.post(
 );
 
 
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.render('pages/home', { user: null, message: 'Logged out.' });
+  });
+});
+
+
+
 // *****************************************************
 // <!-- OAuth (Google / GitHub) -->
 // *****************************************************
@@ -719,7 +746,7 @@ async function getJson(url, token) {
 function requireAuth(req, res, next) {
 
   if (!req.session.user) {
-    return res.redirect('/');
+    return res.redirect('/login');
   }
 
   next();
@@ -830,7 +857,20 @@ async function createUser(req, res, { passwordHash = null, identity = null, fall
     return req.session.save(() =>
       res.render('pages/home', { user: req.session.user, message: `Welcome, ${username}! Your profile is set up.` }));
   }
-  res.render('pages/home', { message: `Account created! Welcome, ${username}. You can log in now.` });
+  res.render('pages/login', {
+    ...loginViewData({ username }),
+    message: `Account created! Welcome, ${username}. Log in to get started.`,
+  });
+}
+
+function loginViewData(form = {}, message) {
+  return {
+    form,
+    message,
+    error: Boolean(message),
+    googleEnabled: isConfigured(OAUTH_PROVIDERS.google),
+    githubEnabled: isConfigured(OAUTH_PROVIDERS.github),
+  };
 }
 
 function registerViewData(form = {}, message, pending) {

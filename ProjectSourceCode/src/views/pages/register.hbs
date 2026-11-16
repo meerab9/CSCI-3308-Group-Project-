@@ -64,6 +64,11 @@
         {{/unless}}
 
         <button type="button" class="btn btn-brand w-100 mt-2" data-next>Continue</button>
+        {{#unless oauth}}
+        <p class="text-center small mt-3 mb-0">
+          Already have an account? <a href="/login">Log in</a>
+        </p>
+        {{/unless}}
       </section>
 
       <!-- ============ Step 2: About you ============ -->
