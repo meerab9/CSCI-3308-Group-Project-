@@ -75,3 +75,72 @@ describe('POST /api/auth/register', () => {
     expect(rows).to.have.lengthOf(0);
   });
 });
+
+// Extra credit: 2 additional integration tests for a feature other than
+// registration. Uses a chai-http agent so the session cookie from a real
+// POST /api/auth/login carries over to GET /api/auth/me.
+describe('GET /api/auth/me', () => {
+  const meUser = {
+    username: `lab10_me_${randomUUID()}`,
+    password: 'TestPassword123!',
+  };
+
+  before(async () => {
+    await chai.request(app).post('/api/auth/register').send(meUser);
+  });
+
+  after(async () => {
+    await db.none('DELETE FROM users WHERE username = $1', [meUser.username]);
+  });
+
+  it('rejects a request with no session', async () => {
+    const res = await chai.request(app).get('/api/auth/me');
+    expect(res).to.have.status(401);
+    expect(res.body).to.have.property('error');
+  });
+
+  it('returns the signed-in username after logging in', async () => {
+    const agent = chai.request.agent(app);
+
+    const loginRes = await agent.post('/api/auth/login').send(meUser);
+    expect(loginRes).to.have.status(200);
+
+    const meRes = await agent.get('/api/auth/me');
+    expect(meRes).to.have.status(200);
+    expect(meRes.body).to.deep.equal({ username: meUser.username });
+
+    agent.close();
+  });
+});
+
+describe('Login page (/login)', () => {
+  const user = { username: `login_${randomUUID().slice(0, 8)}`, password: 'TestPassword123!' };
+
+  before(async () => {
+    const hash = await bcrypt.hash(user.password, 10);
+    await db.none('INSERT INTO users (username, password) VALUES ($1, $2);', [user.username, hash]);
+  });
+  after(() => db.none('DELETE FROM users WHERE username = $1;', [user.username]));
+
+  it('renders the login form', async () => {
+    const res = await chai.request(app).get('/login');
+    expect(res).to.have.status(200);
+    expect(res.text).to.include('action="/login"');
+  });
+
+  it('logs in with the right password and redirects home', async () => {
+    const res = await chai.request(app).post('/login').type('form').redirects(0).send(user);
+    expect(res).to.have.status(302);
+    expect(res).to.redirectTo('/');
+  });
+
+  it('rejects a wrong password with 401 and an error message', async () => {
+    const res = await chai
+      .request(app)
+      .post('/login')
+      .type('form')
+      .send({ username: user.username, password: 'wrong-password' });
+    expect(res).to.have.status(401);
+    expect(res.text).to.include('Incorrect username or password.');
+  });
+});

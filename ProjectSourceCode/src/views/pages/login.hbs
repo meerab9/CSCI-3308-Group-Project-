@@ -1,0 +1,45 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Log in to find your study crew.</p>
+
+    {{#if message}}
+    <div class="alert alert-{{#if error}}danger{{else}}success{{/if}} py-2 small" role="alert" id="server-message">
+      {{message}}
+    </div>
+    {{/if}}
+
+    <div class="d-grid gap-2">
+      {{#if googleEnabled}}
+      <a href="/auth/google" class="btn social-btn social-google"><i class="bi bi-google"></i> Continue with Google</a>
+      {{else}}
+      <button type="button" class="btn social-btn social-google" disabled title="Google sign-in isn't configured yet"><i class="bi bi-google"></i> Continue with Google</button>
+      {{/if}}
+      {{#if githubEnabled}}
+      <a href="/auth/github" class="btn social-btn social-github"><i class="bi bi-github"></i> Continue with GitHub</a>
+      {{else}}
+      <button type="button" class="btn social-btn social-github" disabled title="GitHub sign-in isn't configured yet"><i class="bi bi-github"></i> Continue with GitHub</button>
+      {{/if}}
+    </div>
+
+    <div class="divider-text"><span>or</span></div>
+
+    <form action="/login" method="POST" id="login-form">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" value="{{form.username}}"
+               required autocomplete="username" autofocus>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password"
+               required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-brand w-100 mt-2">Log in</button>
+    </form>
+
+    <p class="text-center small mt-3 mb-0">
+      New here? <a href="/register">Create an account</a>
+    </p>
+  </div>
+</div>

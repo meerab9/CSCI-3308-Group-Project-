@@ -2,5 +2,10 @@
   {{> message}}
   <h1 class="mb-3">Find your study crew</h1>
   <p class="text-muted mb-4">Meet other CS students to study with or just hang out.</p>
-  <a href="/register" class="btn btn-primary btn-lg" id="register-button">Create an account</a>
+  {{#unless user}}
+  <div class="d-flex gap-2 justify-content-center">
+    <a href="/register" class="btn btn-brand btn-lg" id="register-button">Create an account</a>
+    <a href="/login" class="btn btn-outline-secondary btn-lg" id="login-button">Log in</a>
+  </div>
+  {{/unless}}
 </div>
