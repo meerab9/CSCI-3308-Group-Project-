@@ -53,6 +53,25 @@ app.use((req, res, next) => {
   next();
 });
 
+// Count of connection requests waiting on the logged-in user, for the badge
+// on the navbar's Messages button. Only runs for page loads, not API calls or
+// static files, and never blocks a page if the query fails.
+app.use(async (req, res, next) => {
+  if (!req.session.user || req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/resources') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+  try {
+    const row = await db.one(
+      "SELECT COUNT(*)::int AS n FROM connections WHERE addressee = $1 AND status = 'pending'",
+      [req.session.user.username]
+    );
+    res.locals.pendingRequests = row.n;
+  } catch (err) {
+    res.locals.pendingRequests = 0;
+  }
+  next();
+});
+
 // Only expose the static folders, not the whole src directory.
 app.use('/resources', express.static(path.join(__dirname, 'resources')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -111,6 +130,9 @@ app.use('/api', require('./routes/api'));
 
 // JSON API for messaging (conversations, threads, sending) — see routes/messages.js.
 app.use('/api', require('./routes/messages'));
+
+// JSON API for connection requests (send, accept, decline) — see routes/connections.js.
+app.use('/api', require('./routes/connections'));
 
 // Messaging page. The page itself is a shell; resources/js/messages.js loads
 // conversations and threads from the /api messaging routes.
