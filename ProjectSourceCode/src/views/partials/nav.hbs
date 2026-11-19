@@ -4,6 +4,7 @@
     <div class="d-flex gap-2 align-items-center">
       {{#if user}}
       <span class="navbar-text text-light small">Signed in as <strong>{{user.username}}</strong></span>
+	<a class="btn btn-outline-light btn-sm" href="/discover">Discover</a>
       <a class="btn btn-outline-light btn-sm position-relative" href="/messages">
         Messages
         {{#if pendingRequests}}
