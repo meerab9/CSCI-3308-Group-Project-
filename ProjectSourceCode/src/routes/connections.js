@@ -57,20 +57,19 @@ async function acceptRequest(t, requester, addressee) {
   return accepted;
 }
 
-// POST /api/connections/:username  { message }
+// POST /api/connections/:username  { message }   (message is optional)
+// The Discover page's Connect button sends no message; the Messages page's
+// New Chat sends one as an intro note.
 router.post('/connections/:username', requireLogin, async (req, res) => {
   const me = req.session.user.username;
   const other = req.params.username;
   const raw = (req.body || {}).message;
-  const message = typeof raw === 'string' ? raw.trim() : '';
+  const message = typeof raw === 'string' && raw.trim() ? raw.trim() : null;
 
   if (other === me) {
     return res.status(400).json({ error: "You can't send a connection request to yourself." });
   }
-  if (!message) {
-    return res.status(400).json({ error: 'Add a short message so they know why you want to connect.' });
-  }
-  if (message.length > MAX_INTRO_LENGTH) {
+  if (message && message.length > MAX_INTRO_LENGTH) {
     return res.status(400).json({ error: `Keep your message to ${MAX_INTRO_LENGTH} characters or fewer.` });
   }
 
@@ -97,7 +96,9 @@ router.post('/connections/:username', requireLogin, async (req, res) => {
       // and add your note as the reply.
       if (theirs && theirs.status === 'pending') {
         await acceptRequest(t, other, me);
-        await t.none('INSERT INTO messages (sender, recipient, body) VALUES ($1, $2, $3)', [me, other, message]);
+        if (message) {
+          await t.none('INSERT INTO messages (sender, recipient, body) VALUES ($1, $2, $3)', [me, other, message]);
+        }
         return { status: 200, body: { status: 'accepted' } };
       }
 
