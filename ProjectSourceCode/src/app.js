@@ -128,6 +128,11 @@ app.get('/welcome', (req, res) => {
 // JSON API (auth + profile reads) — see routes/api.js.
 app.use('/api', require('./routes/api'));
 
+// JSON API for connection requests (send, accept, decline) — see routes/connections.js.
+// Mounted before discover so POST /api/connections/:username (used by both the
+// Discover page's Connect button and the Messages page) is handled here.
+app.use('/api', require('./routes/connections'));
+
 // JSON API for Discover profiles.
 app.use('/api', require('./routes/discover'));
 

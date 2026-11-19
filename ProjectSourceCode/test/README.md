@@ -104,7 +104,7 @@ does nothing.
 
 | Route | Success | Failure |
 |---|---|---|
-| `POST /api/connections/:username` `{ "message": "..." }` | `201` `{ status: "pending" }`; or `200` `{ status: "accepted" }` if they had already requested you | `400` yourself / empty / over 300 characters, `404` no such user, `409` already connected or already sent |
+| `POST /api/connections/:username` `{ "message": "..." }` (message optional; the Discover page sends none) | `201` `{ status: "pending" }`; or `200` `{ status: "accepted" }` if they had already requested you | `400` yourself / note over 300 characters, `404` no such user, `409` already connected or already sent |
 | `GET /api/connections/requests` | `200` `{ requests: [...] }`, pending requests sent to you, with their intro message | `401` |
 | `GET /api/connections/sent` | `200` `{ sent: [...] }`, your requests still waiting (declined ones also show as pending) | `401` |
 | `POST /api/connections/:username/accept` | `200` `{ status: "accepted" }`; their intro message becomes the first message in your chat | `404` no pending request from them |
@@ -114,8 +114,9 @@ Checks: no session → `401`; a request is saved as pending, shows up for
 the recipient, and messaging stays blocked; accepting lets both people
 message and the chat opens with the intro note; declining hides the
 request while the sender still sees "pending" and can't tell; two people
-requesting each other connect right away; requesting yourself, an empty
-note, an unknown user, and a duplicate all fail; accepting or declining a
+requesting each other connect right away; a request with no note works
+(Discover's Connect button); requesting yourself, a note over 300
+characters, an unknown user, and a duplicate all fail; accepting or declining a
 request that doesn't exist → `404`.
 
 ### Cleanup
@@ -125,6 +126,6 @@ and `afterEach`. The messaging and connection tests create their own
 randomly named users and delete them at the end (`ON DELETE CASCADE`
 removes their connections and messages too), clearing messages and
 connections between tests. So the suite is safe to run repeatedly
-(confirmed by running it twice back to back — both runs passed 26/26). The database pool
+(confirmed by running it twice back to back — both runs passed 27/27). The database pool
 is closed in an `after()` hook via `pgp.end()`, so Mocha exits cleanly on
 its own, with no `--exit` flag needed.

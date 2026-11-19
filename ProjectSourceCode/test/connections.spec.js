@@ -127,15 +127,25 @@ describe('Connection requests API', () => {
     expect(thread.body.messages.map((m) => m.body)).to.deep.equal(['Want to pair program?', 'Was about to ask you!']);
   });
 
-  it('rejects bad requests: yourself (400), empty note (400), unknown user (404), duplicate (409)', async () => {
+  it('sends a request with no note, like the Discover page Connect button', async () => {
+    const res = await agents[ana].post(`/api/connections/${cam}`);
+    expect(res).to.have.status(201);
+    expect(await connectionRows(ana, cam)).to.deep.equal([
+      { requester: ana, addressee: cam, status: 'pending', message: null },
+    ]);
+    const inbox = await agents[cam].get('/api/connections/requests');
+    expect(inbox.body.requests.map((r) => [r.username, r.message])).to.deep.equal([[ana, null]]);
+  });
+
+  it('rejects bad requests: yourself (400), note over 300 characters (400), unknown user (404), duplicate (409)', async () => {
     const self = await agents[ana].post(`/api/connections/${ana}`).send({ message: 'me!' });
-    const empty = await agents[ana].post(`/api/connections/${cam}`).send({ message: '   ' });
+    const tooLong = await agents[ana].post(`/api/connections/${cam}`).send({ message: 'x'.repeat(301) });
     const unknown = await agents[ana].post(`/api/connections/nobody_${tag}`).send({ message: 'hi' });
     await agents[ana].post(`/api/connections/${cam}`).send({ message: 'hi' });
     const duplicate = await agents[ana].post(`/api/connections/${cam}`).send({ message: 'hi again' });
 
     expect(self).to.have.status(400);
-    expect(empty).to.have.status(400);
+    expect(tooLong).to.have.status(400);
     expect(unknown).to.have.status(404);
     expect(duplicate).to.have.status(409);
     expect(await connectionRows(ana, cam)).to.have.lengthOf(1);
