@@ -1,0 +1,396 @@
+
+/* git match shared styles */
+
+:root {
+    --background: #242D28;
+    --panel: #303B34;
+    --panel-hover: #3B4940;
+    --border: #46544A;
+    --text: #E5E8DF;
+    --muted: #A0AAA0;
+    --green: #8FA58D;
+    --green-hover: #A6B9A2;
+    --input: #28332D;
+}
+
+/* base */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+    color: var(--green-hover);
+}
+
+a:hover {
+    color: #C0CEB9;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text);
+}
+
+.text-muted {
+    color: var(--muted) !important;
+}
+
+/* navigation */
+
+.navbar {
+    min-height: 64px;
+    padding: 0.7rem 2rem;
+    background: var(--panel) !important;
+    border-bottom: 1px solid var(--border);
+}
+
+.navbar-brand {
+    color: var(--text) !important;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.navbar-brand i {
+    color: var(--green-hover);
+}
+
+.navbar-text {
+    color: var(--muted) !important;
+}
+
+.navbar .btn-outline-light {
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.navbar .btn-outline-light:hover {
+    background: var(--panel-hover);
+    border-color: var(--green);
+    color: var(--text);
+}
+
+.navbar .btn-light {
+    background: var(--green);
+    border-color: var(--green);
+    color: #202A23;
+}
+
+.navbar .btn-light:hover {
+    background: var(--green-hover);
+    border-color: var(--green-hover);
+    color: #202A23;
+}
+
+/* buttons */
+
+.btn-primary,
+.btn-brand {
+    background: var(--green);
+    border-color: var(--green);
+    color: #202A23;
+    font-weight: 650;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-brand:hover,
+.btn-brand:focus {
+    background: var(--green-hover);
+    border-color: var(--green-hover);
+    color: #202A23;
+}
+
+.btn-outline-secondary {
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--panel-hover);
+    border-color: var(--green);
+    color: var(--text);
+}
+
+/* homepage */
+
+main > .container.mt-5.text-center {
+    max-width: 560px;
+    margin-top: 0 !important;
+    margin-bottom: 0;
+    padding: 3rem 2rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+main > .container.mt-5.text-center h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    font-weight: 750;
+    letter-spacing: -0.055em;
+}
+
+main > .container.mt-5.text-center p {
+    color: var(--muted) !important;
+    line-height: 1.7;
+}
+
+#register-button {
+    margin-top: 0.5rem;
+    padding: 0.75rem 1.4rem;
+    border-radius: 7px;
+    background: var(--green);
+    border-color: var(--green);
+    color: #202A23;
+    font-weight: 700;
+}
+
+#register-button:hover {
+    background: var(--green-hover);
+    border-color: var(--green-hover);
+}
+
+/* registration and authentication */
+
+.auth-page {
+    background: var(--background);
+}
+
+.auth-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.auth-title {
+    color: var(--text);
+    font-weight: 750;
+    letter-spacing: -0.04em;
+}
+
+.auth-subtitle {
+    color: var(--muted);
+}
+
+.auth-card .form-label {
+    color: var(--text);
+}
+
+.auth-card .form-control,
+.auth-card .form-select,
+.auth-card textarea,
+.form-control,
+.form-select {
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.auth-card .form-control::placeholder,
+.form-control::placeholder {
+    color: var(--muted);
+}
+
+.auth-card .form-control:focus,
+.auth-card .form-select:focus,
+.auth-card textarea:focus,
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--input);
+    border-color: var(--green);
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(143, 165, 141, 0.18);
+}
+
+.auth-card .btn-light {
+    background: var(--panel-hover);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.auth-card .btn-light:hover {
+    background: var(--border);
+    color: var(--text);
+}
+
+.auth-card .btn-link {
+    color: var(--green-hover);
+}
+
+.auth-card .btn-link:hover {
+    color: var(--text);
+}
+
+.social-google {
+    background: var(--panel-hover);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.social-google:hover {
+    background: var(--border);
+    color: var(--text);
+}
+
+.social-github {
+    background: #202923;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.social-github:hover {
+    background: #39473D;
+    color: var(--text);
+}
+
+.stepper-item {
+    color: var(--muted);
+}
+
+.stepper-item.active .stepper-label {
+    color: var(--text);
+}
+
+.stepper-dot {
+    background: var(--input);
+    border-color: var(--border);
+    color: var(--muted);
+}
+
+.stepper-item.active .stepper-dot {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+.stepper-item.done .stepper-dot {
+    background: var(--green);
+    border-color: var(--green);
+    color: #202A23;
+}
+
+.stepper-item:not(:first-child)::before {
+    background: var(--border);
+}
+
+.stepper-item.done::before,
+.stepper-item.active::before {
+    background: var(--green);
+}
+
+.avatar-img {
+    border-color: var(--green);
+}
+
+.avatar-placeholder {
+    color: var(--muted);
+}
+
+.avatar-edit {
+    background: var(--green);
+    color: #202A23;
+    border-color: var(--panel);
+}
+
+.avatar-picker:hover .avatar-edit {
+    background: var(--green-hover);
+}
+
+.choice-card {
+    border-color: var(--border);
+    background: var(--input);
+    color: var(--text);
+}
+
+.choice-card i {
+    color: var(--muted);
+}
+
+.choice-card:hover {
+    border-color: var(--green);
+}
+
+.btn-check:checked + .choice-card {
+    border-color: var(--green);
+    background: #3B4940;
+    color: var(--green-hover);
+}
+
+.btn-check:checked + .choice-card i {
+    color: var(--green-hover);
+}
+
+.prompt-card {
+    background: var(--input);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.divider-text {
+    color: var(--muted);
+}
+
+.divider-text::before,
+.divider-text::after {
+    border-color: var(--border);
+}
+
+.auth-card .form-check-label {
+    color: var(--text);
+}
+
+.auth-card .form-check-input {
+    background-color: var(--input);
+    border-color: var(--border);
+}
+
+.auth-card .form-check-input:checked {
+    background-color: var(--green);
+    border-color: var(--green);
+}
+
+.alert-danger {
+    background: rgba(220, 120, 110, 0.12);
+    border-color: rgba(220, 120, 110, 0.4);
+    color: #E9AAA2;
+}
+
+/* footer */
+
+.footer {
+    background: var(--panel) !important;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.footer .text-muted {
+    color: var(--muted) !important;
+}
+
+/* responsive */
+
+@media (max-width: 575px) {
+    .navbar {
+        padding: 0.7rem 1rem;
+    }
+
+    main > .container.mt-5.text-center {
+        margin: 1rem;
+        padding: 2rem 1.4rem;
+    }
+
+    .auth-card {
+        padding: 1.5rem 1.25rem;
+    }
+}
