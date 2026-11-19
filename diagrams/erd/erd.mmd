@@ -25,7 +25,9 @@ erDiagram
         varchar requester PK,FK
         varchar addressee PK,FK
         varchar status "pending | accepted | rejected"
+        varchar message "intro note, max 300 chars"
         timestamp created_at
+        timestamp responded_at
     }
     MESSAGES {
         int message_id PK

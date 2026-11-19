@@ -3,7 +3,7 @@
 ## Scope
 
 1. **Account creation & sign-in** — issues #4, #9, #10, #2 (registration page, registration backend, login backend/page). Implemented; covered by automated integration tests in `ProjectSourceCode/test/server.spec.js`.
-2. **Messaging with a connection** — issues #3 (messaging UI) and #22 (messaging page). Implemented at `/messages` (page) and `/api/conversations`, `/api/messages/:username` (JSON), backed by the `connections` and `messages` tables; covered by automated integration tests in `ProjectSourceCode/test/messages.spec.js`. Creating connections from the UI depends on the matching feature; until then, testers can load `ProjectSourceCode/dev-seed/messaging-demo.sql` to get connected accounts.
+2. **Messaging with a connection** — issues #3 (messaging UI) and #22 (messaging page). Implemented at `/messages` (page) and `/api/conversations`, `/api/messages/:username` (JSON), backed by the `connections` and `messages` tables; covered by automated integration tests in `ProjectSourceCode/test/messages.spec.js`. Users become connected through connection requests (send with a short intro note, accept or decline under "Connection requests" on `/messages`), covered by `ProjectSourceCode/test/connections.spec.js`. Testers can also load `ProjectSourceCode/dev-seed/messaging-demo.sql` to get connected accounts and incoming requests right away.
 3. **Profile editing** — issue #25 (user profile editing page, In Progress). Not yet implemented, users can currently only set these fields once, at registration.
 
 ## Acceptance criteria

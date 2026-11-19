@@ -34,7 +34,11 @@ CREATE TABLE IF NOT EXISTS connections (
   addressee    VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
   status       VARCHAR(10) NOT NULL DEFAULT 'pending'
                  CHECK (status IN ('pending', 'accepted', 'rejected')),
+  -- The short "want to connect?" note sent with the request. When the request
+  -- is accepted it becomes the first message of the pair's conversation.
+  message      VARCHAR(300),
   created_at   TIMESTAMP NOT NULL DEFAULT NOW(),
+  responded_at TIMESTAMP,
   PRIMARY KEY (requester, addressee),
   CHECK (requester <> addressee)
 );

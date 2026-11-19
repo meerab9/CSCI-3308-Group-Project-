@@ -1,0 +1,8 @@
+1. Decisions made
+Everyone is doing backend and frontend for their assigned page. Make a pull request and put everything in teammates-reference-draft first and then we can see if we want to merge to main.
+
+2. Alternative actions/options discussed
+If need help just reach out but mainly just focus on getting handle bars and database routes and requests working on local repo
+
+3. Follow-up items, including agreed-on roles and responsibilities You may or may not have content for each of the points above.
+In lab we will check up on how everyone is doing with their pages and if anyone needs more help.

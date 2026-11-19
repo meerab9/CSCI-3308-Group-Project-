@@ -6,10 +6,16 @@
  *   GET  /api/messages/:user?after=  -> a thread (or only messages newer than an id)
  *   POST /api/messages/:user         -> send { body }
  *
+ * ...and the connection-request routes in src/routes/connections.js:
+ *   GET  /api/connections/requests   -> requests waiting on you
+ *   GET  /api/connections/sent       -> requests you've sent
+ *   POST /api/connections/:user      -> send a request { message }
+ *   POST /api/connections/:user/accept | /decline
+ *
  * "Live" updates are done by polling: while a chat is open, the page asks for
  * messages newer than the last one it has every few seconds, and refreshes
- * the sidebar a little less often. Open with /messages?with=<username> to
- * jump straight into a chat (e.g. from a profile's "Message" button).
+ * the sidebar and requests a little less often. Open with
+ * /messages?with=<username> to jump straight into a chat.
  */
 (function () {
   'use strict';
@@ -22,6 +28,8 @@
 
   let connections = [];   // [{ username, profile_picture, github, school }]
   let conversations = []; // [{ username, ..., last_body, last_sender, last_sent_at, last_message_id }]
+  let requests = [];      // incoming: [{ username, ..., message, created_at }]
+  let sentRequests = [];  // outgoing, still waiting
   let activeUsername = null;
   let thread = [];        // messages in the open chat, oldest first
   let lastMessageId = 0;
@@ -42,7 +50,8 @@
 
   // Same username always gets the same avatar color.
   function colorFor(username) {
-    const palette = ['#8957e5', '#1f6feb', '#db6d28', '#bf3989', '#0e8a7e', '#9e6a03', '#cf222e', '#1a7f37'];
+    // Muted tones that sit well on the sage theme; all keep white initials readable.
+    const palette = ['#5F7F63', '#6E6494', '#9A6B4F', '#4F6F8C', '#8E5D58', '#6F7A43', '#4E7F78', '#8A5D7A'];
     let hash = 0;
     for (const ch of username) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
     return palette[hash % palette.length];
@@ -52,7 +61,15 @@
     if (person.profile_picture) {
       return `<img src="${escapeHTML(person.profile_picture)}" alt="">`;
     }
-    return escapeHTML(person.username.slice(0, 2).toUpperCase());
+    // "demo_ava" -> "DA", "priya.ml" -> "PM", "wayne" -> "WA"
+    const parts = person.username.split(/[._-]+/).filter(Boolean);
+    const initials = parts.length > 1 ? parts[0][0] + parts[1][0] : person.username.slice(0, 2);
+    return escapeHTML(initials.toUpperCase());
+  }
+
+  function showToast(text) {
+    $('toastText').textContent = text;
+    sentToast.show();
   }
 
   function setAvatar(el, person) {
@@ -93,7 +110,7 @@
       ...options,
     });
     if (res.status === 401) {
-      window.location.href = '/';
+      window.location.href = '/login';
       throw new Error('Signed out');
     }
     let data = {};
@@ -289,12 +306,94 @@
     }
   });
 
+  /* ---------------- connection requests ---------------- */
+
+  async function loadRequests() {
+    const [incoming, outgoing] = await Promise.all([
+      api('/api/connections/requests'),
+      api('/api/connections/sent'),
+    ]);
+    requests = incoming.requests;
+    sentRequests = outgoing.sent;
+    renderRequests();
+  }
+
+  async function loadConnections() {
+    const data = await api('/api/connections');
+    connections = data.connections;
+  }
+
+  function renderRequests() {
+    $('requestsSection').hidden = requests.length === 0;
+    $('requestsCount').textContent = requests.length;
+    updateNavBadge(requests.length);
+
+    $('requestsList').innerHTML = requests.map((r) => `
+      <div class="gm-request" data-username="${escapeHTML(r.username)}">
+        <div class="gm-request-top">
+          <div class="gm-avatar" style="background:${r.profile_picture ? 'transparent' : colorFor(r.username)}">${avatarInner(r)}</div>
+          <div class="flex-grow-1 overflow-hidden">
+            <div class="gm-convo-name text-truncate">@${escapeHTML(r.username)}</div>
+            <div class="small gm-muted text-truncate">${escapeHTML(r.school || 'Wants to connect')}</div>
+          </div>
+          <span class="gm-convo-time">${shortTime(r.created_at)}</span>
+        </div>
+        ${r.message ? `<p class="gm-request-note">${escapeHTML(r.message)}</p>` : ''}
+        <div class="gm-request-actions">
+          <button type="button" class="btn btn-gm btn-sm" data-action="accept">Accept</button>
+          <button type="button" class="btn btn-gm-ghost btn-sm" data-action="decline">Decline</button>
+        </div>
+        <div class="gm-error" role="alert"></div>
+      </div>`).join('');
+
+    $('requestsList').querySelectorAll('.gm-request button').forEach((btn) =>
+      btn.addEventListener('click', () => respondToRequest(btn.closest('.gm-request'), btn.dataset.action))
+    );
+  }
+
+  async function respondToRequest(card, action) {
+    const username = card.dataset.username;
+    card.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    try {
+      await api(`/api/connections/${encodeURIComponent(username)}/${action}`, { method: 'POST' });
+      requests = requests.filter((r) => r.username !== username);
+      renderRequests();
+      if (action === 'accept') {
+        await Promise.all([loadConnections(), loadConversations()]);
+        await openConversation(username);
+        showToast(`You're connected with @${username}!`);
+      }
+    } catch (err) {
+      card.querySelectorAll('button').forEach((b) => { b.disabled = false; });
+      showError(card.querySelector('.gm-error'), err.message);
+    }
+  }
+
+  // Keep the red number on the navbar's Messages button in sync.
+  function updateNavBadge(count) {
+    const link = document.querySelector('nav a[href="/messages"]');
+    if (!link) return;
+    let badge = $('navRequestBadge');
+    if (count === 0) {
+      if (badge) badge.remove();
+      return;
+    }
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.id = 'navRequestBadge';
+      badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+      link.classList.add('position-relative');
+      link.appendChild(badge);
+    }
+    badge.innerHTML = `${count}<span class="visually-hidden"> connection requests waiting</span>`;
+  }
+
   /* ---------------- New Chat modal ---------------- */
 
   function renderFriendPills() {
     const box = $('friendPills');
     if (connections.length === 0) {
-      box.innerHTML = '<span class="gm-muted small">No connections yet. Match with someone first, then you can message them here.</span>';
+      box.innerHTML = '<span class="gm-muted small">No connections yet. Type someone\'s username above and send them a connection request.</span>';
       return;
     }
     box.innerHTML = connections.map((c) => `
@@ -336,11 +435,11 @@
     }
     if (!valid) return;
 
-    // Quick client-side check for a friendlier message; the server enforces it too.
+    // Not connected yet: offer to send a connection request with this message
+    // as the intro note instead. (The server enforces all of this too.)
     const connection = findConnection(recipient);
     if (!connection) {
-      recipientEl.classList.add('is-invalid');
-      showError($('recipientError'), `You're not connected with @${recipient}. Match with them first to start a chat.`);
+      offerRequest(recipient);
       return;
     }
 
@@ -350,7 +449,7 @@
       newChatModal.hide();
       await loadConversations();
       await openConversation(connection.username);
-      sentToast.show();
+      showToast('Message sent!');
     } catch (err) {
       showError($('firstMessageError'), err.message);
     } finally {
@@ -358,12 +457,62 @@
     }
   });
 
+  function offerRequest(recipient) {
+    const alreadySent = sentRequests.some((s) => s.username.toLowerCase() === recipient.toLowerCase());
+    $('requestOffer').hidden = false;
+    $('sendRequestBtn').hidden = alreadySent;
+    $('requestOfferText').textContent = alreadySent
+      ? `You already sent @${recipient} a connection request. You can message them once they accept.`
+      : `You're not connected with @${recipient} yet. Send them a connection request, and your message will go with it as a short intro (300 characters max).`;
+  }
+
+  function hideRequestOffer() {
+    $('requestOffer').hidden = true;
+  }
+
+  $('sendRequestBtn').addEventListener('click', async () => {
+    const recipient = $('recipientInput').value.trim().replace(/^@/, '');
+    const note = $('firstMessageInput').value.trim();
+    hideError($('firstMessageError'));
+    if (!note) {
+      $('firstMessageInput').classList.add('is-invalid');
+      showError($('firstMessageError'), 'Write a short intro to go with your request.');
+      return;
+    }
+
+    $('sendRequestBtn').disabled = true;
+    try {
+      const data = await api(`/api/connections/${encodeURIComponent(recipient)}`, {
+        method: 'POST',
+        body: JSON.stringify({ message: note }),
+      });
+      newChatModal.hide();
+      if (data.status === 'accepted') {
+        // They had already asked to connect with you, so you're matched now.
+        await Promise.all([loadConnections(), loadConversations(), loadRequests()]);
+        await openConversation(recipient);
+        showToast(`You're connected with @${recipient}!`);
+      } else {
+        await loadRequests();
+        showToast(`Request sent to @${recipient}`);
+      }
+    } catch (err) {
+      showError(err.status === 404 ? $('recipientError') : $('firstMessageError'), err.message);
+    } finally {
+      $('sendRequestBtn').disabled = false;
+    }
+  });
+
+  // Typing a different username hides the request offer again.
+  $('recipientInput').addEventListener('input', hideRequestOffer);
+
   $('newChatModal').addEventListener('show.bs.modal', renderFriendPills);
   $('newChatModal').addEventListener('hidden.bs.modal', () => {
     $('newChatForm').reset();
     ['recipientInput', 'firstMessageInput'].forEach((id) => $(id).classList.remove('is-invalid'));
     hideError($('recipientError'));
     hideError($('firstMessageError'));
+    hideRequestOffer();
   });
 
   /* ---------------- polling ---------------- */
@@ -378,7 +527,9 @@
         if (activeUsername === username) appendMessages(data.messages);
       }
       pollTicks += 1;
-      if (pollTicks % LIST_POLL_EVERY === 0) await loadConversations();
+      if (pollTicks % LIST_POLL_EVERY === 0) {
+        await Promise.all([loadConversations(), loadRequests()]);
+      }
     } catch (err) {
       // Network blips are fine; the next poll will catch up.
     } finally {
@@ -393,8 +544,7 @@
 
   async function init() {
     try {
-      const [conn] = await Promise.all([api('/api/connections'), loadConversations()]);
-      connections = conn.connections;
+      await Promise.all([loadConnections(), loadConversations(), loadRequests()]);
     } catch (err) {
       $('convoList').innerHTML = `<div class="gm-empty-list">${escapeHTML(err.message)}</div>`;
       return;
