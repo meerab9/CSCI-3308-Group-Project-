@@ -1,0 +1,10 @@
+11/12/26 lab meeting
+1. Decisions made
+Now everyone's pages need to be linked together by a common nav bar. Someone will do a styling of the CSS for all pages after we link everything.
+Want messages and account creation working by next meeting. Being able to connect with another user.
+
+2. Alternative actions/options discussed
+Linked a few pages in class today, only need home discovery page to be linked.
+
+3. Follow-up items, including agreed-on roles and responsibilities You may or may not have content for each of the points above.
+In lab we will make sure it works from main branch on someones computer locally and that users can connect and message each other.
