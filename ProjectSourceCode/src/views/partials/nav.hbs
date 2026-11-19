@@ -4,7 +4,14 @@
     <div class="d-flex gap-2 align-items-center">
       {{#if user}}
       <span class="navbar-text text-light small">Signed in as <strong>{{user.username}}</strong></span>
-      <a class="btn btn-outline-light btn-sm" href="/messages">Messages</a>
+      <a class="btn btn-outline-light btn-sm position-relative" href="/messages">
+        Messages
+        {{#if pendingRequests}}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="navRequestBadge">
+          {{pendingRequests}}<span class="visually-hidden"> connection requests waiting</span>
+        </span>
+        {{/if}}
+      </a>
       <a class="btn btn-outline-light btn-sm" href="/profile">Profile</a>
       <a class="btn btn-outline-light btn-sm" href="/logout">Log out</a>
       {{else}}
