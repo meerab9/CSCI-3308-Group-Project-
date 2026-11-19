@@ -128,11 +128,16 @@ app.get('/welcome', (req, res) => {
 // JSON API (auth + profile reads) — see routes/api.js.
 app.use('/api', require('./routes/api'));
 
+// JSON API for Discover profiles.
+app.use('/api', require('./routes/discover'));
+
 // JSON API for messaging (conversations, threads, sending) — see routes/messages.js.
 app.use('/api', require('./routes/messages'));
 
-// JSON API for connection requests (send, accept, decline) — see routes/connections.js.
-app.use('/api', require('./routes/connections'));
+// Discover page
+app.get('/discover', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'resources', 'discover', 'discover.html'));
+});
 
 // Messaging page. The page itself is a shell; resources/js/messages.js loads
 // conversations and threads from the /api messaging routes.
