@@ -394,3 +394,53 @@ main > .container.mt-5.text-center p {
         padding: 1.5rem 1.25rem;
     }
 }
+
+
+/* profile page */
+
+.container.py-5 > .card.mx-auto {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+.container.py-5 > .card.mx-auto > .card-body {
+    color: var(--text);
+}
+
+.container.py-5 > .card.mx-auto h1,
+.container.py-5 > .card.mx-auto h4 {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.container.py-5 > .card.mx-auto hr {
+    border-color: var(--border);
+    opacity: 1;
+}
+
+.container.py-5 > .card.mx-auto p {
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.container.py-5 > .card.mx-auto strong {
+    color: var(--green-hover);
+}
+
+.container.py-5 > .card.mx-auto .card.mb-3 {
+    background: var(--input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+}
+
+.container.py-5 > .card.mx-auto .card-body {
+    color: var(--text);
+}
+
+.container.py-5 > .card.mx-auto img {
+    border: 3px solid var(--green);
+}
