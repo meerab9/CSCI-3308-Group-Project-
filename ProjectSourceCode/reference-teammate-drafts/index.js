@@ -20,7 +20,7 @@ app.use(express.static(__dirname + '/'));
 
 const hbs = handlebars.create({
   extname: 'hbs',
-  layoutsDir: path.join(__dirname, 'views'),
+  layoutsDir: path.join(__dirname, 'views/layouts'),
   defaultLayout: 'layouts-main'
 });
 

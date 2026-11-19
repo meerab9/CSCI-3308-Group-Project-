@@ -1,0 +1,349 @@
+
+/* git match shared styles */
+
+:root {
+    --background: #242D28;
+    --panel: #303B34;
+    --panel-hover: #3B4940;
+    --border: #46544A;
+    --text: #E5E8DF;
+    --muted: #A0AAA0;
+    --green: #8FA58D;
+    --green-hover: #A6B9A2;
+    --input: #28332D;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+    color: var(--green-hover);
+}
+
+a:hover {
+    color: #C0CEB9;
+}
+
+
+/* navigation bar */
+
+.navbar {
+    min-height: 64px;
+    padding: 0.7rem 2rem;
+    background: var(--panel) !important;
+    border-bottom: 1px solid var(--border);
+}
+
+.navbar-brand {
+    color: var(--text) !important;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.navbar-brand i {
+    color: var(--green-hover);
+}
+
+.navbar-text {
+    color: var(--muted) !important;
+}
+
+.navbar .btn-outline-light {
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.navbar .btn-outline-light:hover {
+    background: var(--panel-hover);
+    border-color: var(--green);
+    color: var(--text);
+}
+
+.navbar .btn-light {
+    background: var(--green);
+    border-color: var(--green);
+    color: #202A23;
+}
+
+.navbar .btn-light:hover {
+    background: var(--green-hover);
+    border-color: var(--green-hover);
+    color: #202A23;
+}
+
+
+/* homepage */
+
+.home-page {
+    min-height: calc(100vh - 64px);
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+
+.home-container {
+    width: min(100%, 460px);
+    padding: 3rem 2rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.home-container h1 {
+    margin-bottom: 1rem;
+    color: var(--text);
+    font-size: clamp(2.5rem, 7vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.07em;
+}
+
+.home-container h1::after {
+    content: ".";
+    color: var(--green);
+}
+
+.home-options {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 2rem;
+}
+
+.home-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+    padding: 0.8rem 1.2rem;
+    border: 1px solid var(--green);
+    border-radius: 7px;
+    background: var(--green);
+    color: #202A23;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.home-button:hover {
+    background: var(--green-hover);
+    border-color: var(--green-hover);
+    color: #202A23;
+    transform: translateY(-2px);
+}
+
+.home-button:last-child {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.home-button:last-child:hover {
+    background: var(--panel-hover);
+    border-color: var(--green);
+    color: var(--text);
+}
+
+
+/* login page */
+
+.login-page {
+    min-height: calc(100vh - 64px);
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+
+.login-container {
+    width: min(100%, 440px);
+    padding: 2.75rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+    text-align: center;
+}
+
+.login-label {
+    margin-bottom: 0.5rem;
+    color: var(--green);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.login-container h1 {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+}
+
+.login-form {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.login-form input,
+.register-page .form-control,
+.register-page textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--input);
+    color: var(--text);
+    font: inherit;
+}
+
+.login-form input::placeholder,
+.register-page .form-control::placeholder {
+    color: var(--muted);
+}
+
+.login-form input:focus,
+.register-page .form-control:focus,
+.register-page textarea:focus {
+    border-color: var(--green);
+    outline: none;
+    background: var(--input);
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(143, 165, 141, 0.18);
+}
+
+.login-form button {
+    min-height: 48px;
+    margin-top: 0.5rem;
+    border: 1px solid var(--green);
+    border-radius: 7px;
+    background: var(--green);
+    color: #202A23;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background: var(--green-hover);
+    border-color: var(--green-hover);
+}
+
+
+/* registration page */
+
+.register-page {
+    min-height: calc(100vh - 64px);
+    padding: 2.5rem 1rem;
+}
+
+.register-page .container {
+    max-width: 820px;
+}
+
+.register-page .card {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+.register-page .card-body {
+    padding: 2.5rem !important;
+}
+
+.register-page h2 {
+    color: var(--text);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+}
+
+.register-page h5 {
+    margin-top: 1.8rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--green);
+    font-weight: 750;
+}
+
+.register-page .form-label {
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.register-page .text-muted {
+    color: var(--muted) !important;
+}
+
+.register-page .form-check {
+    margin-bottom: 0.65rem;
+}
+
+.register-page .form-check-input {
+    background-color: var(--input);
+    border-color: var(--border);
+    box-shadow: none;
+}
+
+.register-page .form-check-input:checked {
+    background-color: var(--green);
+    border-color: var(--green);
+}
+
+.register-page .form-check-label {
+    color: var(--text);
+}
+
+.register-page .btn-primary {
+    min-height: 48px;
+    border-color: var(--green);
+    background: var(--green);
+    color: #202A23;
+    font-weight: 700;
+}
+
+.register-page .btn-primary:hover {
+    border-color: var(--green-hover);
+    background: var(--green-hover);
+    color: #202A23;
+}
+
+.register-page .alert-danger {
+    border-color: rgba(220, 120, 110, 0.4);
+    background: rgba(220, 120, 110, 0.12);
+    color: #E9AAA2;
+}
+
+
+/* responsive design */
+
+@media (max-width: 575px) {
+    .navbar {
+        padding: 0.7rem 1rem;
+    }
+
+    .home-container,
+    .login-container {
+        padding: 2rem 1.4rem;
+    }
+
+    .register-page .card-body {
+        padding: 1.4rem !important;
+    }
+}
