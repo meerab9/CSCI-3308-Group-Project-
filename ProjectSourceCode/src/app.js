@@ -173,6 +173,31 @@ app.get('/register', (req, res) => {
 
 app.post('/register', withUpload, async (req, res) => {
   const form = req.body;
+
+	      // Parse and clean structured skills
+      const skills = [
+        ...new Map(
+          (form.skills || '')
+            .split(',')
+            .map(skill => skill.trim())
+            .filter(skill => skill.length > 0 && skill.length <= 100)
+            .map(skill => [skill.toLowerCase(), skill])
+        ).values()
+      ];
+
+      // Parse and clean structured interests
+      const structuredInterests = [
+        ...new Map(
+          (form.structured_interests || '')
+            .split(',')
+            .map(interest => interest.trim())
+            .filter(interest => interest.length > 0 && interest.length <= 100)
+            .map(interest => [interest.toLowerCase(), interest])
+        ).values()
+      ];
+
+
+
   const password = form.password || '';
   if (!isValidPassword(password)) {
     return failRegister(req, res, 'Password must be at least 8 characters.');
@@ -218,7 +243,11 @@ app.get('/profile', requireAuth, async (req, res) => {
       `
       SELECT
         username,
-        profile_picture,
+        full_name,
+	bio,
+	major,
+	location,
+	profile_picture,
         github,
         school,
         cs_interests,
@@ -238,6 +267,57 @@ app.get('/profile', requireAuth, async (req, res) => {
       return res.status(404).send('User not found.');
     }
 
+    // Load the user's saved skills
+    const skills = await db.any(
+      `
+      SELECT s.skill_name
+      FROM skills s
+      JOIN user_skills us
+        ON s.skill_id = us.skill_id
+      WHERE us.username = $1
+      ORDER BY s.skill_name;
+      `,
+      [username]
+    );
+
+    // Load the user's saved structured interests
+    const structuredInterests = await db.any(
+      `
+      SELECT i.interest_name
+      FROM interests i
+      JOIN user_interests ui
+        ON i.interest_id = ui.interest_id
+      WHERE ui.username = $1
+      ORDER BY i.interest_name;
+      `,
+      [username]
+    );
+
+    // Convert the results into comma-separated strings
+    
+    // Keep skills and interests as arrays for the profile page
+    user.skills = skills.map(skill => skill.skill_name);
+
+    user.structured_interests = structuredInterests.map(
+      interest => interest.interest_name
+    )
+	.join(', ');
+
+    // Load the user's saved projects
+    const projects = await db.any(
+  `
+  SELECT
+    project_id,
+    project_name,
+    description,
+    project_url,
+    technologies
+  FROM projects
+  WHERE username = $1
+  ORDER BY created_at DESC;
+  `,
+  [username]
+);
 
     const prompts = await db.any(
       `
@@ -258,7 +338,8 @@ app.get('/profile', requireAuth, async (req, res) => {
 
     res.render('pages/profile', {
       user,
-      prompts
+      prompts,
+	projects
     });
 
 
@@ -287,13 +368,17 @@ app.get('/profile/edit', requireAuth, async (req, res) => {
     const user = await db.one(
       `
       SELECT
-        username,
-        profile_picture,
-        github,
-        school,
-        cs_interests,
-        other_interests,
-        looking_for
+    	username,
+    	profile_picture,
+    	full_name,
+    	bio,
+    	major,
+    	location,
+    	github,
+    	school,
+    	cs_interests,
+    	other_interests,
+    	looking_for
 
       FROM users
 
@@ -302,8 +387,62 @@ app.get('/profile/edit', requireAuth, async (req, res) => {
       [username]
     );
 
+	    // Load the user's saved skills
+    const skills = await db.any(
+      `
+      SELECT s.skill_name
+      FROM skills s
+      JOIN user_skills us
+        ON s.skill_id = us.skill_id
+      WHERE us.username = $1
+      ORDER BY s.skill_name;
+      `,
+      [username]
+    );
 
-    const prompts = await db.any(
+    // Load the user's saved structured interests
+    const structuredInterests = await db.any(
+      `
+      SELECT i.interest_name
+      FROM interests i
+      JOIN user_interests ui
+        ON i.interest_id = ui.interest_id
+      WHERE ui.username = $1
+      ORDER BY i.interest_name;
+      `,
+      [username]
+    );
+
+    user.skills = skills
+      .map(skill => skill.skill_name)
+      .join(', ');
+
+    user.structured_interests = structuredInterests
+      .map(interest => interest.interest_name)
+      .join(', ');
+
+    // Load the user's saved projects
+    const projects = await db.any(
+      `
+      SELECT
+        project_id,
+        project_name,
+        description,
+        project_url,
+        technologies
+      FROM projects
+      WHERE username = $1
+      ORDER BY created_at DESC;
+      `,
+      [username]
+    );
+
+// Format technologies for the edit form
+projects.forEach(project => {
+  project.technologies = (project.technologies || []).join(', ');
+});
+    
+const prompts = await db.any(
       `
       SELECT
         prompt,
@@ -344,7 +483,8 @@ app.get('/profile/edit', requireAuth, async (req, res) => {
 
     res.render('pages/edit-profile', {
       user,
-      promptSlots
+      promptSlots,
+	projects
     });
 
 
@@ -389,8 +529,53 @@ app.post(
       const form =
         req.body;
 
+      // Parse and clean structured skills
+      const skills = [
+        ...new Map(
+          (form.skills || '')
+            .split(',')
+            .map(skill => skill.trim())
+            .filter(skill => skill.length > 0 && skill.length <= 100)
+            .map(skill => [skill.toLowerCase(), skill])
+        ).values()
+      ];
 
-      const github =
+      // Parse and clean structured interests
+      const structuredInterests = [
+        ...new Map(
+          (form.structured_interests || '')
+            .split(',')
+            .map(interest => interest.trim())
+            .filter(interest => interest.length > 0 && interest.length <= 100)
+            .map(interest => [interest.toLowerCase(), interest])
+        ).values()
+      ];
+
+// Collect submitted project fields
+const projectNames = [].concat(form.project_name || []);
+const projectDescriptions = [].concat(form.project_description || []);
+const projectUrls = [].concat(form.project_url || []);
+const projectTechnologies = [].concat(
+  form.project_technologies || []
+);
+
+// Combine the submitted fields into project objects
+const projects = projectNames
+  .map((name, index) => ({
+    project_name: (name || '').trim(),
+    description: (projectDescriptions[index] || '').trim(),
+    project_url: (projectUrls[index] || '').trim(),
+    technologies: (projectTechnologies[index] || '')
+      .split(',')
+      .map(technology => technology.trim())
+      .filter(technology => technology.length > 0)
+  }))
+  .filter(project =>
+    project.project_name.length > 0 &&
+    project.project_name.length <= 150
+  );
+      
+const github =
         normalizeGithub(form.github);
 
 
@@ -489,40 +674,135 @@ app.post(
             UPDATE users
 
             SET
-              profile_picture = $1,
-              github = $2,
-              school = $3,
-              cs_interests = $4,
-              other_interests = $5,
-              looking_for = $6
+    		profile_picture = $1,
+    		full_name = $2,
+    		bio = $3,
+    		major = $4,
+    		location = $5,
+    		github = $6,
+    		school = $7,
+    		cs_interests = $8,
+    		other_interests = $9,
+    		looking_for = $10
 
-            WHERE username = $7;
+	WHERE username = $11;
             `,
             [
-              newPicture,
+    newPicture,
 
-              github || null,
+    trimOrNull(form.full_name),
+    trimOrNull(form.bio),
+    trimOrNull(form.major),
+    trimOrNull(form.location),
 
-              trimOrNull(
-                form.school
-              ),
+    github || null,
+    trimOrNull(form.school),
+    trimOrNull(form.cs_interests),
+    trimOrNull(form.other_interests),
 
-              trimOrNull(
-                form.cs_interests
-              ),
+    lookingFor,
+    username
+]
 
-              trimOrNull(
-                form.other_interests
-              ),
 
-              lookingFor,
-
-              username
-            ]
           );
 
+          // Replace the user's old skills
+          await transaction.none(
+            `
+            DELETE FROM user_skills
+            WHERE username = $1;
+            `,
+            [username]
+          );
 
-          // Replace the user's old prompts
+          // Save and link each skill
+          for (const skill of skills) {
+            const savedSkill = await transaction.one(
+              `
+              INSERT INTO skills (skill_name)
+              VALUES ($1)
+              ON CONFLICT (skill_name)
+              DO UPDATE SET skill_name = EXCLUDED.skill_name
+              RETURNING skill_id;
+              `,
+              [skill]
+            );
+
+            await transaction.none(
+              `
+              INSERT INTO user_skills (username, skill_id)
+              VALUES ($1, $2);
+              `,
+              [username, savedSkill.skill_id]
+            );
+          }
+
+
+          // Replace the user's old structured interests
+          await transaction.none(
+            `
+            DELETE FROM user_interests
+            WHERE username = $1;
+            `,
+            [username]
+          );
+
+          // Save and link each structured interest
+          for (const interest of structuredInterests) {
+            const savedInterest = await transaction.one(
+              `
+              INSERT INTO interests (interest_name)
+              VALUES ($1)
+              ON CONFLICT (interest_name)
+              DO UPDATE SET interest_name = EXCLUDED.interest_name
+              RETURNING interest_id;
+              `,
+              [interest]
+            );
+
+            await transaction.none(
+              `
+              INSERT INTO user_interests (username, interest_id)
+              VALUES ($1, $2);
+              `,
+              [username, savedInterest.interest_id]
+            );
+          }
+          
+          // Replace the user's old projects
+          await transaction.none(
+            `
+            DELETE FROM projects
+            WHERE username = $1;
+            `,
+            [username]
+          );
+
+          // Save each submitted project
+          for (const project of projects) {
+            await transaction.none(
+              `
+              INSERT INTO projects (
+                username,
+                project_name,
+                description,
+                project_url,
+                technologies
+              )
+              VALUES ($1, $2, $3, $4, $5);
+              `,
+              [
+                username,
+                project.project_name,
+                project.description || null,
+                project.project_url || null,
+                project.technologies
+              ]
+            );
+          }
+
+// Replace the user's old prompts
 
           await transaction.none(
             `

@@ -354,22 +354,6 @@ async function handleConnect(button) {
 }
 
 
-function handleConnect(button) {
-    const card = button.closest(".profile-card");
-    if (!card) return;
-
-    const name = card.querySelector("h2").textContent;
-
-    document.getElementById("connectionMessage").textContent =
-        `Connection requests for ${name} will be connected to the database in the next stage.`;
-
-    if (connectionModal) {
-        connectionModal.show();
-    }
-
-    card.remove();
-    checkEmptyState();
-}
 
 // Pass on a user (UI only for now)
 function handlePass(button) {

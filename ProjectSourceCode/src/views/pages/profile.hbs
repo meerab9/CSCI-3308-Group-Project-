@@ -40,6 +40,30 @@
 
       <h4>{{user.username}}</h4>
 
+{{#if user.full_name}}
+  <h5 class="text-muted">{{user.full_name}}</h5>
+{{/if}}
+
+{{#if user.bio}}
+  <div class="mb-3 mt-3">
+    <strong>About Me</strong>
+    <p>{{user.bio}}</p>
+  </div>
+{{/if}}
+
+{{#if user.major}}
+  <p>
+    <strong>Major:</strong>
+    {{user.major}}
+  </p>
+{{/if}}
+
+{{#if user.location}}
+  <p>
+    <strong>Location:</strong>
+    {{user.location}}
+  </p>
+{{/if}}
 
       <hr>
 
@@ -67,6 +91,69 @@
         {{user.other_interests}}
       </p>
 
+      {{#if user.skills.length}}
+        <div class="mb-3">
+          <strong>Skills:</strong>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            {{#each user.skills}}
+              <span class="badge rounded-pill bg-primary">{{this}}</span>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}
+
+      {{#if user.structured_interests.length}}
+        <div class="mb-3">
+          <strong>Additional Interests:</strong>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            {{#each user.structured_interests}}
+              <span class="badge rounded-pill bg-secondary">{{this}}</span>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}      
+
+{{#if projects.length}}
+  <hr>
+
+  <h4 class="mb-3">My Projects</h4>
+
+  {{#each projects}}
+    <div class="card mb-3">
+      <div class="card-body">
+
+        <h5 class="card-title">{{project_name}}</h5>
+
+        {{#if description}}
+          <p class="card-text">{{description}}</p>
+        {{/if}}
+
+        {{#if project_url}}
+          <a href="{{project_url}}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="btn btn-outline-primary btn-sm mb-3">
+            View Project
+          </a>
+        {{/if}}
+
+        {{#if technologies.length}}
+          <div>
+            <strong>Technologies:</strong>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              {{#each technologies}}
+                <span class="badge rounded-pill bg-info text-dark">
+                  {{this}}
+                </span>
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+
+      </div>
+    </div>
+  {{/each}}
+{{/if}}
 
       <p>
         <strong>Looking For:</strong>
@@ -74,7 +161,47 @@
       </p>
 
 
-      <hr>
+{{#if projects.length}}
+  <hr>
+
+  <h4 class="mb-3">My Projects</h4>
+
+  {{#each projects}}
+    <div class="card mb-3">
+      <div class="card-body">
+
+        <h5 class="card-title">{{project_name}}</h5>
+
+        {{#if description}}
+          <p class="card-text">{{description}}</p>
+        {{/if}}
+
+        {{#if project_url}}
+          <a href="{{project_url}}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="btn btn-outline-primary btn-sm mb-3">
+            View Project
+          </a>
+        {{/if}}
+
+        {{#if technologies.length}}
+          <div>
+            <strong>Technologies:</strong>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              {{#each technologies}}
+                <span class="badge rounded-pill bg-info text-dark">
+                  {{this}}
+                </span>
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+
+      </div>
+    </div>
+  {{/each}}
+{{/if}}      <hr>
 
 
       <h4>Profile Prompts</h4>
