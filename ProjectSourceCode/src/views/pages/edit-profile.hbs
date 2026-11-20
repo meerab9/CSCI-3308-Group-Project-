@@ -111,6 +111,76 @@
 
       </div>
 
+<!-- DISCOVER PROFILE INFORMATION -->
+
+<h4 class="mb-3 mt-4">Discover Profile Information</h4>
+
+<!-- FULL NAME -->
+<div class="mb-3">
+  <label for="full_name" class="form-label">
+    Full Name
+  </label>
+
+  <input
+    type="text"
+    class="form-control"
+    id="full_name"
+    name="full_name"
+    value="{{user.full_name}}"
+    maxlength="100"
+    placeholder="Your full name"
+  >
+</div>
+
+<!-- BIO -->
+<div class="mb-3">
+  <label for="bio" class="form-label">
+    About Me
+  </label>
+
+  <textarea
+    class="form-control"
+    id="bio"
+    name="bio"
+    rows="3"
+    maxlength="1000"
+    placeholder="Tell other GitMatch users about yourself..."
+  >{{user.bio}}</textarea>
+</div>
+
+<!-- MAJOR -->
+<div class="mb-3">
+  <label for="major" class="form-label">
+    Major
+  </label>
+
+  <input
+    type="text"
+    class="form-control"
+    id="major"
+    name="major"
+    value="{{user.major}}"
+    maxlength="100"
+    placeholder="e.g. Computer Science"
+  >
+</div>
+
+<!-- LOCATION -->
+<div class="mb-4">
+  <label for="location" class="form-label">
+    Location
+  </label>
+
+  <input
+    type="text"
+    class="form-control"
+    id="location"
+    name="location"
+    value="{{user.location}}"
+    maxlength="100"
+    placeholder="e.g. Boulder, Colorado"
+  >
+</div>
 
       <!-- GITHUB -->
 
@@ -280,6 +350,175 @@
 
       </div>
 
+
+      <!-- STRUCTURED SKILLS -->
+
+      <div class="mb-3">
+
+        <label
+          for="skills"
+          class="form-label"
+        >
+          Skills
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="skills"
+          name="skills"
+          maxlength="1000"
+          value="{{user.skills}}"
+          placeholder="JavaScript, Python, SQL"
+        >
+
+        <small class="text-muted">
+          Separate each skill with a comma.
+        </small>
+
+      </div>
+
+
+      <!-- STRUCTURED INTERESTS -->
+
+      <div class="mb-4">
+
+        <label
+          for="structured_interests"
+          class="form-label"
+        >
+          Additional Interests
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="structured_interests"
+          name="structured_interests"
+          maxlength="1000"
+          value="{{user.structured_interests}}"
+          placeholder="Web Development, AI, Open Source"
+        >
+
+        <small class="text-muted">
+          Separate each interest with a comma.
+        </small>
+
+      </div>
+
+      <!-- PROJECTS -->
+
+      <h4 class="mb-3 mt-4">My Projects</h4>
+
+      <p class="text-muted">
+        Share projects you've worked on. Include the technologies you used.
+      </p>
+
+      {{#each projects}}
+        <div class="card p-3 mb-3 project-form-card">
+
+          <input type="hidden" name="project_id" value="{{project_id}}">
+
+          <div class="mb-3">
+            <label class="form-label">Project Name</label>
+            <input
+              type="text"
+              class="form-control"
+              name="project_name"
+              maxlength="150"
+              value="{{project_name}}"
+              placeholder="e.g. GitMatch"
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea
+              class="form-control"
+              name="project_description"
+              rows="2"
+              maxlength="1000"
+              placeholder="Describe your project..."
+            >{{description}}</textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Project URL</label>
+            <input
+              type="url"
+              class="form-control"
+              name="project_url"
+              value="{{project_url}}"
+              placeholder="https://github.com/..."
+            >
+          </div>
+
+          <div>
+            <label class="form-label">Technologies</label>
+            <input
+              type="text"
+              class="form-control"
+              name="project_technologies"
+              value="{{technologies}}"
+              placeholder="JavaScript, HTML, CSS"
+            >
+            <small class="text-muted">Separate technologies with commas.</small>
+          </div>
+
+        </div>
+      {{/each}}
+
+      <!-- Empty project form for adding a new project -->
+      <div class="card p-3 mb-3 project-form-card">
+
+        <h6>New Project</h6>
+
+        <input type="hidden" name="project_id" value="">
+
+        <div class="mb-3">
+          <label class="form-label">Project Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="project_name"
+            maxlength="150"
+            placeholder="e.g. GitMatch"
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            name="project_description"
+            rows="2"
+            maxlength="1000"
+            placeholder="Describe your project..."
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Project URL</label>
+          <input
+            type="url"
+            class="form-control"
+            name="project_url"
+            placeholder="https://github.com/..."
+          >
+        </div>
+
+        <div>
+          <label class="form-label">Technologies</label>
+          <input
+            type="text"
+            class="form-control"
+            name="project_technologies"
+            placeholder="JavaScript, HTML, CSS"
+          >
+          <small class="text-muted">Separate technologies with commas.</small>
+        </div>
+
+      </div>
 
       <!-- PROMPTS -->
 
