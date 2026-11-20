@@ -140,10 +140,10 @@ app.use('/api', require('./routes/discover'));
 app.use('/api', require('./routes/messages'));
 
 // Discover page
+// Discover page
 app.get('/discover', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'resources', 'discover', 'discover.html'));
+    res.render('pages/discover');
 });
-
 // Messaging page. The page itself is a shell; resources/js/messages.js loads
 // conversations and threads from the /api messaging routes.
 app.get('/messages', requireAuth, (req, res) => {
@@ -165,7 +165,7 @@ app.post('/login', async (req, res) => {
     return res.status(401).render('pages/login', loginViewData({ username }, 'Incorrect username or password.'));
   }
   req.session.user = { username: user.username };
-  req.session.save(() => res.redirect('/'));
+  req.session.save(() => res.redirect('/discover'));
 });
 
 app.get('/', (req, res) => {
