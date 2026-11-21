@@ -86,14 +86,18 @@ connection between the two users (`403` otherwise).
 | Route | Success | Failure |
 |---|---|---|
 | `GET /api/connections` | `200` `{ connections: [...] }`, accepted connections only | `401` |
-| `GET /api/conversations` | `200` `{ conversations: [...] }`, newest first, with each one's last message | `401` |
-| `GET /api/messages/:username?after=<id>` | `200` `{ messages: [...] }`, oldest first; with `after`, only newer ones | `401`, `403` not connected, `400` bad `after` |
+| `GET /api/conversations` | `200` `{ conversations: [...] }`, newest first, with each one's last message and `unread_count` | `401` |
+| `GET /api/messages/:username?after=<id>` | `200` `{ messages: [...], seen }`, oldest first (each with `read_at`); with `after`, only newer ones. `seen` is your newest message they've read, or `null` | `401`, `403` not connected, `400` bad `after` |
 | `POST /api/messages/:username` `{ "body": "..." }` | `201` `{ message: {...} }`, body trimmed | `401`, `403` not connected, `400` empty or over 2000 characters |
+| `POST /api/messages/:username/read` | `200` `{ marked: n }`, marks their unread messages to you as read | `401`, `403` not connected |
 
 Checks: no session → `401`; sending to a connection saves one row and the
 recipient sees it; polling with `?after` returns only newer messages;
 messaging a non-connection → `403` with nothing saved; empty message →
-`400` with nothing saved; `/api/connections` lists accepted connections only.
+`400` with nothing saved; `/api/connections` lists accepted connections only;
+messages count as unread for the recipient until they mark the chat read
+(opening it alone doesn't), and then the sender gets `seen`, even on an
+`?after` poll; marking a non-connection's chat read → `403`.
 
 ### Connection request tests — `test/connections.spec.js`
 
@@ -109,6 +113,7 @@ does nothing.
 | `GET /api/connections/sent` | `200` `{ sent: [...] }`, your requests still waiting (declined ones also show as pending) | `401` |
 | `POST /api/connections/:username/accept` | `200` `{ status: "accepted" }`; their intro message becomes the first message in your chat | `404` no pending request from them |
 | `POST /api/connections/:username/decline` | `200` `{ status: "declined" }` | `404` no pending request from them |
+| `DELETE /api/connections/:username` | `200` `{ status: "removed" }`; messaging blocked both ways, chat hidden, history kept | `401`, `404` not connected (including only pending) |
 
 Checks: no session → `401`; a request is saved as pending, shows up for
 the recipient, and messaging stays blocked; accepting lets both people
@@ -117,7 +122,9 @@ request while the sender still sees "pending" and can't tell; two people
 requesting each other connect right away; a request with no note works
 (Discover's Connect button); requesting yourself, a note over 300
 characters, an unknown user, and a duplicate all fail; accepting or declining a
-request that doesn't exist → `404`.
+request that doesn't exist → `404`; removing a connection blocks messaging
+both ways, hides the chat, keeps the messages, and lets either person
+request again; removing a pending or nonexistent connection → `404`.
 
 ### Cleanup
 
@@ -126,6 +133,6 @@ and `afterEach`. The messaging and connection tests create their own
 randomly named users and delete them at the end (`ON DELETE CASCADE`
 removes their connections and messages too), clearing messages and
 connections between tests. So the suite is safe to run repeatedly
-(confirmed by running it twice back to back — both runs passed 27/27). The database pool
+(each test cleans up after itself). The database pool
 is closed in an `after()` hook via `pgp.end()`, so Mocha exits cleanly on
 its own, with no `--exit` flag needed.

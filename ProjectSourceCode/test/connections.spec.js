@@ -157,4 +157,38 @@ describe('Connection requests API', () => {
     expect(accept).to.have.status(404);
     expect(decline).to.have.status(404);
   });
+
+  it('removing a connection blocks messaging for both people but keeps the history', async () => {
+    await agents[ana].post(`/api/connections/${ben}`).send({ message: 'Study buddies?' });
+    await agents[ben].post(`/api/connections/${ana}/accept`);
+
+    // Ben (who accepted) removes Ana.
+    const removeRes = await agents[ben].delete(`/api/connections/${ana}`);
+    expect(removeRes).to.have.status(200);
+    expect(removeRes.body).to.deep.equal({ status: 'removed' });
+    expect(await connectionRows(ana, ben)).to.have.lengthOf(0);
+
+    expect((await agents[ana].post(`/api/messages/${ben}`).send({ body: 'hello?' })).status).to.equal(403);
+    expect((await agents[ben].get(`/api/messages/${ana}`)).status).to.equal(403);
+    expect((await agents[ana].get('/api/conversations')).body.conversations).to.have.lengthOf(0);
+    expect((await agents[ana].get('/api/connections')).body.connections).to.have.lengthOf(0);
+
+    // Messages are kept, and either person can send a fresh request.
+    const kept = await db.any('SELECT body FROM messages WHERE sender = $1 AND recipient = $2', [ana, ben]);
+    expect(kept.map((m) => m.body)).to.deep.equal(['Study buddies?']);
+    expect((await agents[ana].post(`/api/connections/${ben}`).send({ message: 'Sorry, misclick!' })).status).to.equal(201);
+  });
+
+  it("can't remove a connection that doesn't exist or is only pending (404), or without a session (401)", async () => {
+    await agents[ana].post(`/api/connections/${cam}`).send({ message: 'hi' });
+
+    const pending = await agents[cam].delete(`/api/connections/${ana}`);
+    const none = await agents[ana].delete(`/api/connections/${ben}`);
+    const noSession = await chai.request(app).delete(`/api/connections/${ana}`);
+
+    expect(pending).to.have.status(404);
+    expect(none).to.have.status(404);
+    expect(noSession).to.have.status(401);
+    expect((await connectionRows(ana, cam)).map((r) => r.status)).to.deep.equal(['pending']);
+  });
 });

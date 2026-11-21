@@ -6,6 +6,7 @@
 //   GET  /api/connections/sent                 requests you sent that are still waiting
 //   POST /api/connections/:username/accept     accept their request -> you can now message
 //   POST /api/connections/:username/decline    decline their request
+//   DELETE /api/connections/:username          remove an existing connection
 //
 // (GET /api/connections, the list of people you're already connected with,
 //  lives in routes/messages.js because the messaging page uses it.)
@@ -189,6 +190,31 @@ router.post('/connections/:username/decline', requireLogin, async (req, res) => 
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: 'Could not decline this request.' });
+  }
+});
+
+// DELETE /api/connections/:username
+// Removes an accepted connection (either of you can do it). Afterwards
+// neither person can message the other, and the chat disappears from both
+// sidebars. Old messages are kept, so if you reconnect later the history
+// comes back. Either person can send a new request.
+router.delete('/connections/:username', requireLogin, async (req, res) => {
+  const me = req.session.user.username;
+  const other = req.params.username;
+  try {
+    const removed = await db.result(
+      `DELETE FROM connections
+        WHERE status = 'accepted'
+          AND ((requester = $1 AND addressee = $2) OR (requester = $2 AND addressee = $1))`,
+      [me, other]
+    );
+    if (removed.rowCount === 0) {
+      return res.status(404).json({ error: `You're not connected with @${other}.` });
+    }
+    res.json({ status: 'removed' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'Could not remove this connection.' });
   }
 });
 

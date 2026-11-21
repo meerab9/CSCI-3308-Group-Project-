@@ -17,6 +17,8 @@
   --gm-on-accent: #1F2621;               /* dark text on sage, like the site's other buttons */
   --gm-accent-soft: rgba(143, 165, 141, 0.16);
   --gm-danger: #E58C7F;
+  --gm-unread-bg: #45564B;               /* lighter than the panel: "you haven't read this" */
+  --gm-unread-border: var(--gm-accent);
 }
 
 /* ---------- Layout ---------- */
@@ -80,6 +82,18 @@ main:has(> .gm-shell) { display: flex; min-height: 0; min-width: 0; }
 .gm-convo-time { color: var(--gm-muted); font-size: .75rem; white-space: nowrap; margin-left: 8px; }
 .gm-empty-list { color: var(--gm-muted); text-align: center; padding: 32px 16px; }
 
+/* Unread conversation: lighter row, brighter text, and a count dot. */
+.gm-convo.unread { background: var(--gm-unread-bg); }
+.gm-convo.unread:hover { background: #4C5E52; }
+.gm-convo.unread .gm-convo-name { color: #fff; }
+.gm-convo.unread .gm-convo-preview { color: var(--gm-text); font-weight: 600; }
+.gm-convo.unread .gm-convo-time { color: var(--gm-accent-hover); font-weight: 600; }
+.gm-unread-count {
+  flex-shrink: 0; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--gm-accent); color: var(--gm-on-accent);
+  font-size: .7rem; font-weight: 700; line-height: 20px; text-align: center;
+}
+
 .gm-avatar {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -127,6 +141,36 @@ main:has(> .gm-shell) { display: flex; min-height: 0; min-width: 0; }
 .gm-msg-time { font-size: .7rem; color: var(--gm-muted); margin-top: 4px; text-align: left; white-space: normal; }
 .gm-msg.me .gm-msg-time { color: rgba(31, 38, 33, .7); text-align: right; }
 .gm-thread-empty { margin: auto; color: var(--gm-muted); text-align: center; }
+
+/* Their messages you hadn't read yet: lighter bubble + a dot on the left.
+   Stays until you leave the chat so you can see what's new. */
+.gm-msg { position: relative; }
+.gm-msg.them.unread { background: var(--gm-unread-bg); border-color: var(--gm-unread-border); }
+.gm-unread-dot {
+  position: absolute; left: -14px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--gm-accent);
+}
+
+/* Day separator: a line with "Today" / "Yesterday" / "Mon, Nov 3" in the middle. */
+.gm-day {
+  display: flex; align-items: center; gap: 12px; margin: 8px 0 2px;
+  color: var(--gm-muted); font-size: .75rem; font-weight: 600; letter-spacing: .03em;
+}
+.gm-day::before, .gm-day::after { content: ''; flex: 1; border-top: 1px solid var(--gm-border); }
+
+/* Read receipt under your newest message. */
+.gm-receipt { align-self: flex-end; margin-top: -6px; font-size: .72rem; color: var(--gm-muted); }
+.gm-receipt.seen { color: var(--gm-accent-hover); }
+
+/* Header "..." menu */
+.gm-icon-btn { border: 0; }
+.gm-dropdown { background: var(--gm-panel); border: 1px solid var(--gm-border); }
+.gm-dropdown .dropdown-item { color: var(--gm-text); }
+.gm-dropdown .dropdown-item:hover, .gm-dropdown .dropdown-item:focus { background: var(--gm-panel-hover); color: var(--gm-text); }
+.gm-dropdown .gm-danger-item, .gm-dropdown .gm-danger-item:hover { color: var(--gm-danger); }
+.btn-gm-danger { background: var(--gm-danger); color: #2A1714; border: none; font-weight: 600; }
+.btn-gm-danger:hover, .btn-gm-danger:focus { background: #EDA59A; color: #2A1714; }
+.btn-gm-danger:disabled { background: var(--gm-danger); color: #2A1714; opacity: .6; }
 
 .gm-placeholder {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;

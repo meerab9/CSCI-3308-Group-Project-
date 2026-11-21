@@ -3,14 +3,23 @@
  * Talks to the JSON routes in src/routes/messages.js:
  *   GET  /api/connections            -> people you can message
  *   GET  /api/conversations          -> sidebar list
- *   GET  /api/messages/:user?after=  -> a thread (or only messages newer than an id)
+ *   GET  /api/messages/:user?after=  -> a thread (or only messages newer than an id),
+ *                                       plus `seen` for the read receipt
  *   POST /api/messages/:user         -> send { body }
+ *   POST /api/messages/:user/read    -> mark their messages to you as read
  *
  * ...and the connection-request routes in src/routes/connections.js:
  *   GET  /api/connections/requests   -> requests waiting on you
  *   GET  /api/connections/sent       -> requests you've sent
  *   POST /api/connections/:user      -> send a request { message }
  *   POST /api/connections/:user/accept | /decline
+ *   DELETE /api/connections/:user    -> remove a connection
+ *
+ * Unread: a conversation with messages you haven't opened gets a lighter row
+ * and a dot in the sidebar. When you open it, the messages that were unread
+ * stay lighter (with a dot) until you leave the chat, so you can see what's
+ * new, and the page tells the server you've read them. Under your own latest
+ * message you see "Sent" or "Seen <time>".
  *
  * "Live" updates are done by polling: while a chat is open, the page asks for
  * messages newer than the last one it has every few seconds, and refreshes
@@ -33,12 +42,15 @@
   let activeUsername = null;
   let thread = [];        // messages in the open chat, oldest first
   let lastMessageId = 0;
+  let seen = null;        // { message_id, read_at }: your newest message they've read
+  let highlighted = new Set(); // ids of their messages that were unread when they showed up
   let pollTicks = 0;
   let polling = false;
   let sending = false;
 
   const sentToast = new bootstrap.Toast($('sentToast'), { delay: 2500 });
   const newChatModal = bootstrap.Modal.getOrCreateInstance($('newChatModal'));
+  const removeModal = bootstrap.Modal.getOrCreateInstance($('removeModal'));
 
   /* ---------------- helpers ---------------- */
 
@@ -90,10 +102,34 @@
     return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
 
+  // "3:42 PM" — the day is shown by the separator above the message.
+  function clockTime(iso) {
+    return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
   function fullTime(iso) {
     return new Date(iso).toLocaleString([], {
       month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
     });
+  }
+
+  // Read receipt time: "3:42 PM" if it was today, otherwise "Nov 3, 3:42 PM".
+  function seenTime(iso) {
+    return new Date(iso).toDateString() === new Date().toDateString() ? clockTime(iso) : fullTime(iso);
+  }
+
+  // Day separator text: "Today", "Yesterday", "Monday" (this week),
+  // "Mon, Nov 3", or "Mon, Nov 3, 2025" for another year.
+  function dayLabel(iso) {
+    const d = new Date(iso);
+    const startOf = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+    const daysAgo = Math.round((startOf(new Date()) - startOf(d)) / (24 * 60 * 60 * 1000));
+    if (daysAgo === 0) return 'Today';
+    if (daysAgo === 1) return 'Yesterday';
+    if (daysAgo > 1 && daysAgo < 7) return d.toLocaleDateString([], { weekday: 'long' });
+    const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+    if (d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+    return d.toLocaleDateString([], opts);
   }
 
   function showError(el, msg) {
@@ -134,7 +170,11 @@
   async function loadConversations() {
     const data = await api('/api/conversations');
     conversations = data.conversations;
+    // The open chat is being read right now, so it never counts as unread.
+    const open = conversations.find((c) => c.username === activeUsername);
+    if (open) open.unread_count = 0;
     renderConvoList();
+    refreshNavBadge();
   }
 
   function renderConvoList() {
@@ -160,15 +200,22 @@
       const preview = c.last_body === null
         ? '<i>New conversation</i>'
         : (c.last_sender === me ? 'You: ' : '') + escapeHTML(c.last_body);
+      const active = c.username === activeUsername;
+      const unread = !active && c.unread_count > 0;
+      const unreadLabel = unread ? `, ${c.unread_count} unread` : '';
       return `
-        <button type="button" class="gm-convo ${c.username === activeUsername ? 'active' : ''}" data-username="${escapeHTML(c.username)}">
+        <button type="button" class="gm-convo ${active ? 'active' : ''} ${unread ? 'unread' : ''}" data-username="${escapeHTML(c.username)}"
+                aria-label="@${escapeHTML(c.username)}${unreadLabel}">
           <div class="gm-avatar" style="background:${c.profile_picture ? 'transparent' : colorFor(c.username)}">${avatarInner(c)}</div>
           <div class="flex-grow-1 overflow-hidden">
             <div class="d-flex justify-content-between">
               <span class="gm-convo-name">@${escapeHTML(c.username)}</span>
               <span class="gm-convo-time">${c.last_sent_at ? shortTime(c.last_sent_at) : ''}</span>
             </div>
-            <div class="gm-convo-preview">${preview}</div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="gm-convo-preview flex-grow-1">${preview}</div>
+              ${unread ? `<span class="gm-unread-count" aria-hidden="true">${c.unread_count > 99 ? '99+' : c.unread_count}</span>` : ''}
+            </div>
           </div>
         </button>`;
     }).join('');
@@ -184,6 +231,9 @@
     activeUsername = username;
     thread = [];
     lastMessageId = 0;
+    seen = null;
+    highlighted = new Set();
+    setComposerEnabled(true);
 
     const person = personFor(username);
     $('chatPlaceholder').classList.add('d-none');
@@ -209,42 +259,102 @@
     try {
       const data = await api(`/api/messages/${encodeURIComponent(username)}`);
       if (activeUsername !== username) return; // user clicked away while loading
-      appendMessages(data.messages);
+      appendMessages(data.messages, data.seen);
       $('messageInput').focus();
     } catch (err) {
       if (activeUsername !== username) return;
       $('messages').innerHTML = '';
+      if (err.status === 403) setComposerEnabled(false);
       showError($('messageError'), err.message);
     }
   }
 
-  function appendMessages(newOnes) {
+  // Adds new messages to the open thread, updates the read receipt, and tells
+  // the server about anything from them we've now shown on screen.
+  function appendMessages(newOnes, newSeen) {
     const fresh = newOnes.filter((m) => m.message_id > lastMessageId);
-    if (fresh.length === 0 && thread.length > 0) return;
+    const seenChanged = newSeen !== undefined &&
+      (newSeen ? newSeen.message_id : 0) !== (seen ? seen.message_id : 0);
+    if (newSeen !== undefined) seen = newSeen;
+    if (fresh.length === 0 && thread.length > 0 && !seenChanged) return;
 
     thread.push(...fresh);
     if (thread.length) lastMessageId = thread[thread.length - 1].message_id;
 
+    const unreadFromThem = fresh.filter((m) => m.sender !== me && !m.read_at);
+    unreadFromThem.forEach((m) => highlighted.add(m.message_id));
+
     const box = $('messages');
     const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    renderThread();
 
+    // Don't yank the user down if they scrolled up to read older messages.
+    if (fresh.length && (nearBottom || fresh.some((m) => m.sender === me) || fresh.length === thread.length)) {
+      box.scrollTop = box.scrollHeight;
+    }
+
+    if (unreadFromThem.length) markRead(activeUsername);
+  }
+
+  function renderThread() {
+    const box = $('messages');
     if (thread.length === 0) {
       box.innerHTML = `<div class="gm-thread-empty">No messages yet. Say hi to @${escapeHTML(activeUsername)}! 👋</div>`;
       return;
     }
 
-    box.innerHTML = thread.map((m) => `
-      <div class="gm-msg ${m.sender === me ? 'me' : 'them'}">${escapeHTML(m.body)}<div class="gm-msg-time">${fullTime(m.sent_at)}</div></div>`
-    ).join('');
+    const myLast = [...thread].reverse().find((m) => m.sender === me);
+    const html = [];
+    let lastDay = null;
 
-    // Don't yank the user down if they scrolled up to read older messages.
-    if (nearBottom || fresh.some((m) => m.sender === me) || fresh.length === thread.length) {
-      box.scrollTop = box.scrollHeight;
+    for (const m of thread) {
+      const day = new Date(m.sent_at).toDateString();
+      if (day !== lastDay) {
+        html.push(`<div class="gm-day" role="separator"><span>${escapeHTML(dayLabel(m.sent_at))}</span></div>`);
+        lastDay = day;
+      }
+
+      const mine = m.sender === me;
+      const unread = !mine && highlighted.has(m.message_id);
+      // No whitespace inside the bubble: it uses white-space: pre-wrap.
+      html.push(
+        `<div class="gm-msg ${mine ? 'me' : 'them'}${unread ? ' unread' : ''}" title="${escapeHTML(fullTime(m.sent_at))}">` +
+          (unread ? '<span class="gm-unread-dot"></span><span class="visually-hidden">New: </span>' : '') +
+          `${escapeHTML(m.body)}<div class="gm-msg-time">${clockTime(m.sent_at)}</div></div>`
+      );
+
+      if (myLast && m.message_id === myLast.message_id) {
+        const isSeen = seen && seen.message_id >= m.message_id;
+        html.push(isSeen
+          ? `<div class="gm-receipt seen"><i class="bi bi-check2-all"></i> Seen ${escapeHTML(seenTime(seen.read_at))}</div>`
+          : '<div class="gm-receipt"><i class="bi bi-check2"></i> Sent</div>');
+      }
     }
+    box.innerHTML = html.join('');
+  }
+
+  // Tell the server we've read their messages, then clear the unread count.
+  async function markRead(username) {
+    try {
+      await api(`/api/messages/${encodeURIComponent(username)}/read`, { method: 'POST' });
+      const convo = conversations.find((c) => c.username === username);
+      if (convo) convo.unread_count = 0;
+      renderConvoList();
+      refreshNavBadge();
+    } catch (err) {
+      // Not critical: the next poll will try again.
+    }
+  }
+
+  function setComposerEnabled(enabled) {
+    $('messageInput').disabled = !enabled;
+    $('sendBtn').disabled = !enabled;
+    $('chatMenuBtn').disabled = !enabled;
   }
 
   function closeConversation() {
     activeUsername = null;
+    highlighted = new Set();
     $('shell').classList.remove('chat-open');
     $('chatActive').classList.add('d-none');
     $('chatPlaceholder').classList.remove('d-none');
@@ -326,7 +436,7 @@
   function renderRequests() {
     $('requestsSection').hidden = requests.length === 0;
     $('requestsCount').textContent = requests.length;
-    updateNavBadge(requests.length);
+    refreshNavBadge();
 
     $('requestsList').innerHTML = requests.map((r) => `
       <div class="gm-request" data-username="${escapeHTML(r.username)}">
@@ -369,7 +479,13 @@
     }
   }
 
-  // Keep the red number on the navbar's Messages button in sync.
+  // Keep the red number on the navbar's Messages button in sync:
+  // requests waiting on you + unread messages (same count the server puts there).
+  function refreshNavBadge() {
+    const unread = conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
+    updateNavBadge(requests.length + unread);
+  }
+
   function updateNavBadge(count) {
     const link = document.querySelector('nav a[href="/messages"]');
     if (!link) return;
@@ -385,8 +501,34 @@
       link.classList.add('position-relative');
       link.appendChild(badge);
     }
-    badge.innerHTML = `${count}<span class="visually-hidden"> connection requests waiting</span>`;
+    badge.innerHTML = `${count}<span class="visually-hidden"> unread messages and connection requests</span>`;
   }
+
+  /* ---------------- remove connection ---------------- */
+
+  $('removeConnectionBtn').addEventListener('click', () => {
+    if (!activeUsername) return;
+    $('removeName').textContent = '@' + activeUsername;
+    hideError($('removeError'));
+    removeModal.show();
+  });
+
+  $('confirmRemoveBtn').addEventListener('click', async () => {
+    const username = activeUsername;
+    if (!username) return;
+    $('confirmRemoveBtn').disabled = true;
+    try {
+      await api(`/api/connections/${encodeURIComponent(username)}`, { method: 'DELETE' });
+      removeModal.hide();
+      closeConversation();
+      await Promise.all([loadConnections(), loadConversations()]);
+      showToast(`Removed @${username} from your connections`);
+    } catch (err) {
+      showError($('removeError'), err.message);
+    } finally {
+      $('confirmRemoveBtn').disabled = false;
+    }
+  });
 
   /* ---------------- New Chat modal ---------------- */
 
@@ -523,8 +665,19 @@
     try {
       if (activeUsername) {
         const username = activeUsername;
-        const data = await api(`/api/messages/${encodeURIComponent(username)}?after=${lastMessageId}`);
-        if (activeUsername === username) appendMessages(data.messages);
+        try {
+          const data = await api(`/api/messages/${encodeURIComponent(username)}?after=${lastMessageId}`);
+          if (activeUsername === username) appendMessages(data.messages, data.seen);
+        } catch (err) {
+          // They removed the connection while this chat was open.
+          if (err.status === 403 && activeUsername === username) {
+            setComposerEnabled(false);
+            showError($('messageError'), `You're no longer connected with @${username}.`);
+            loadConnections().catch(() => {});
+          } else {
+            throw err;
+          }
+        }
       }
       pollTicks += 1;
       if (pollTicks % LIST_POLL_EVERY === 0) {

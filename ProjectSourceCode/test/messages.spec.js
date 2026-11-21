@@ -130,4 +130,45 @@ describe('Messaging API', () => {
     expect(res).to.have.status(200);
     expect(res.body.connections.map((c) => c.username)).to.deep.equal([bob]);
   });
+
+  it('counts unread messages until the recipient marks the chat read, then shows the sender "seen"', async () => {
+    const aliceAgent = await loggedInAs(alice);
+    const bobAgent = await loggedInAs(bob);
+    await aliceAgent.post(`/api/messages/${bob}`).send({ body: 'one' });
+    const second = await aliceAgent.post(`/api/messages/${bob}`).send({ body: 'two' });
+
+    // Bob has 2 unread; opening the thread alone doesn't mark them read.
+    let list = await bobAgent.get('/api/conversations');
+    expect(list.body.conversations[0]).to.include({ username: alice, unread_count: 2 });
+    const thread = await bobAgent.get(`/api/messages/${alice}`);
+    expect(thread.body.messages.map((m) => m.read_at)).to.deep.equal([null, null]);
+
+    // Alice's own list never counts her own messages, and nothing is seen yet.
+    const aliceList = await aliceAgent.get('/api/conversations');
+    expect(aliceList.body.conversations[0]).to.include({ username: bob, unread_count: 0 });
+    expect((await aliceAgent.get(`/api/messages/${bob}`)).body.seen).to.equal(null);
+
+    // Bob reads the chat.
+    const readRes = await bobAgent.post(`/api/messages/${alice}/read`);
+    expect(readRes).to.have.status(200);
+    expect(readRes.body).to.deep.equal({ marked: 2 });
+    list = await bobAgent.get('/api/conversations');
+    expect(list.body.conversations[0]).to.include({ unread_count: 0 });
+    expect((await bobAgent.post(`/api/messages/${alice}/read`)).body).to.deep.equal({ marked: 0 });
+
+    // Alice now sees her latest message as seen, even when polling with ?after.
+    const poll = await aliceAgent.get(`/api/messages/${bob}?after=${second.body.message.message_id}`);
+    aliceAgent.close();
+    bobAgent.close();
+    expect(poll.body.messages).to.have.lengthOf(0);
+    expect(poll.body.seen.message_id).to.equal(second.body.message.message_id);
+    expect(poll.body.seen.read_at).to.be.a('string');
+  });
+
+  it("can't mark a chat read with someone you aren't connected with (403)", async () => {
+    const aliceAgent = await loggedInAs(alice);
+    const res = await aliceAgent.post(`/api/messages/${carol}/read`);
+    aliceAgent.close();
+    expect(res).to.have.status(403);
+  });
 });

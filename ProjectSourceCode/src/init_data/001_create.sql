@@ -50,7 +50,12 @@ CREATE TABLE IF NOT EXISTS messages (
   recipient    VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
   body         VARCHAR(2000) NOT NULL CHECK (length(trim(body)) > 0),
   sent_at      TIMESTAMP NOT NULL DEFAULT NOW(),
+  -- When the recipient opened the chat and saw it. NULL = still unread.
+  -- Drives the unread dots on /messages and the sender's "Seen" receipt.
+  read_at      TIMESTAMP,
   CHECK (sender <> recipient)
 );
 
 CREATE INDEX IF NOT EXISTS messages_pair_idx ON messages (sender, recipient, message_id);
+-- Fast unread counts: only indexes messages nobody has read yet.
+CREATE INDEX IF NOT EXISTS messages_unread_idx ON messages (recipient, sender) WHERE read_at IS NULL;

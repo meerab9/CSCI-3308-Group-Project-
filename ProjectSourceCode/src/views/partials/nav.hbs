@@ -7,9 +7,9 @@
 	<a class="btn btn-outline-light btn-sm" href="/discover">Discover</a>
       <a class="btn btn-outline-light btn-sm position-relative" href="/messages">
         Messages
-        {{#if pendingRequests}}
+        {{#if messagesBadge}}
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="navRequestBadge">
-          {{pendingRequests}}<span class="visually-hidden"> connection requests waiting</span>
+          {{messagesBadge}}<span class="visually-hidden"> unread messages and connection requests</span>
         </span>
         {{/if}}
       </a>
