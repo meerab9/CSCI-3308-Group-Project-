@@ -13,6 +13,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const crypto = require('crypto');
 const { db } = require('./db');
+const { ensureMessageSchema } = require('./lib/messageSchema');
 const { isValidUsername, isValidPassword, normalizeGithub, trimOrNull } = require('./lib/validators');
 const validateRegistration = require('./validateRegistration');
 
@@ -53,21 +54,34 @@ app.use((req, res, next) => {
   next();
 });
 
-// Count of connection requests waiting on the logged-in user, for the badge
-// on the navbar's Messages button. Only runs for page loads, not API calls or
-// static files, and never blocks a page if the query fails.
+// Number on the navbar's Messages button: connection requests waiting on the
+// logged-in user plus unread messages from people they're connected with.
+// Only runs for page loads, not API calls or static files, and never blocks a
+// page if the query fails.
 app.use(async (req, res, next) => {
   if (!req.session.user || req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/resources') || req.path.startsWith('/uploads')) {
     return next();
   }
   try {
+    await ensureMessageSchema();
     const row = await db.one(
-      "SELECT COUNT(*)::int AS n FROM connections WHERE addressee = $1 AND status = 'pending'",
+      `SELECT
+         (SELECT COUNT(*) FROM connections WHERE addressee = $1 AND status = 'pending')::int AS requests,
+         (SELECT COUNT(*) FROM messages m
+           WHERE m.recipient = $1 AND m.read_at IS NULL
+             AND EXISTS (
+               SELECT 1 FROM connections c
+                WHERE c.status = 'accepted'
+                  AND ((c.requester = $1 AND c.addressee = m.sender)
+                    OR (c.requester = m.sender AND c.addressee = $1))
+             ))::int AS unread`,
       [req.session.user.username]
     );
-    res.locals.pendingRequests = row.n;
+    res.locals.pendingRequests = row.requests;
+    res.locals.unreadMessages = row.unread;
+    res.locals.messagesBadge = row.requests + row.unread;
   } catch (err) {
-    res.locals.pendingRequests = 0;
+    res.locals.messagesBadge = 0;
   }
   next();
 });

@@ -47,6 +47,19 @@
           <div class="small gm-muted" id="chatHandle"></div>
         </div>
         <span class="gm-tag d-none" id="chatTag"></span>
+        <div class="dropdown">
+          <button type="button" class="btn btn-sm btn-gm-ghost gm-icon-btn" id="chatMenuBtn"
+                  data-bs-toggle="dropdown" aria-expanded="false" aria-label="Conversation options">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end gm-dropdown" aria-labelledby="chatMenuBtn">
+            <li>
+              <button type="button" class="dropdown-item gm-danger-item" id="removeConnectionBtn">
+                <i class="bi bi-person-dash"></i> Remove connection
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div class="gm-messages" id="messages" aria-live="polite"></div>
@@ -101,6 +114,27 @@
         <button type="submit" class="btn btn-gm" id="newChatSendBtn">Send</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ===== Remove connection confirm ===== -->
+<div class="modal fade" id="removeModal" tabindex="-1" aria-labelledby="removeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content gm-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="removeLabel"><i class="bi bi-person-dash"></i> Remove <span id="removeName"></span>?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">You won't be able to message each other anymore, and this chat will disappear for both of you.</p>
+        <p class="gm-muted small mb-0">Your messages aren't deleted. If you connect again later, the history comes back.</p>
+        <div class="gm-error" id="removeError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-gm-ghost" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-gm-danger" id="confirmRemoveBtn">Remove</button>
+      </div>
+    </div>
   </div>
 </div>
 
